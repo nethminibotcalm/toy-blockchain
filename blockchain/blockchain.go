@@ -7,7 +7,8 @@ import (
 )
 
 type Blockchain struct {
-	Blocks []block.Block
+    Blocks              []block.Block
+    PendingTransactions []ledger.Transaction
 }
 func CreateGenesisBlock() block.Block{
 	genesis:=block.Block{
@@ -22,15 +23,6 @@ func CreateGenesisBlock() block.Block{
 	//Calculate and assign the hash.
 	genesis.Hash=block.CalculateHash(genesis)
 	return genesis
-}
-// NewBlockchain creates a blockchain with the Genesis Block.
-func NewBlockchain() *Blockchain {
-
-	genesis := CreateGenesisBlock()
-
-	return &Blockchain{
-		Blocks: []block.Block{genesis},
-	}
 }
 func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 
@@ -47,4 +39,44 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 	MineBlock(&newBlock, 4)
 
 	bc.Blocks = append(bc.Blocks, newBlock)
+}
+// NewBlockchain creates a blockchain with the Genesis Block.
+func NewBlockchain() *Blockchain {
+
+    genesis := CreateGenesisBlock()
+
+    return &Blockchain{
+        Blocks:              []block.Block{genesis},
+        PendingTransactions: []ledger.Transaction{},
+    }
+}
+func (bc *Blockchain) MinePendingTransactions(l *ledger.Ledger) {
+
+    if len(bc.PendingTransactions) == 0 {
+        return
+    }
+
+    validTransactions := []ledger.Transaction{}
+
+    for _, tx := range bc.PendingTransactions {
+        if l.ValidateTransaction(tx) {
+            validTransactions = append(validTransactions, tx)
+        }
+    }
+
+    if len(validTransactions) == 0 {
+        bc.PendingTransactions = []ledger.Transaction{}
+        return
+    }
+
+    bc.AddBlock(validTransactions)
+
+    for _, tx := range validTransactions {
+        l.ApplyTransaction(tx)
+    }
+
+    bc.PendingTransactions = []ledger.Transaction{}
+}
+func (bc *Blockchain) AddTransaction(t ledger.Transaction) {
+    bc.PendingTransactions = append(bc.PendingTransactions, t)
 }
