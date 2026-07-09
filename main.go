@@ -19,6 +19,8 @@ func main() {
 
 	l := ledger.NewLedger()
 
+
+
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a command")
 		return
@@ -80,9 +82,9 @@ func main() {
 
 		fmt.Println("Blockchain valid:", bc.ValidateChain())
 
-	case "balance":
-
-		fmt.Println("Balances:", l.Balances)
+case "balance":
+    balances := blockchain.CalculateBalances(bc.Blocks)
+    fmt.Println("Balances:", balances)
 
 	default:
 
