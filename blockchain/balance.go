@@ -2,12 +2,11 @@ package blockchain
 
 import "toy-blockchain/block"
 
-func CalculateBalances(blocks []block.Block) map[string]float64 {
+func CalculateBalances(blocks []block.Block, initialBalances map[string]int) map[string]int{
+	balances := make(map[string]int, len(initialBalances))
 
-	balances := map[string]float64{
-		"Alice":   100,
-		"Bob":     100,
-		"Charlie": 100,
+	for name, balance := range initialBalances {
+		balances[name] = int(balance)
 	}
 
 	for _, b := range blocks {

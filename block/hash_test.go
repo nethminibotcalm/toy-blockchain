@@ -8,17 +8,17 @@ import (
 func TestHashDeterminism(t *testing.T) {
 
 	b := Block{
-		Index: 1,
+		Index:     1,
 		Timestamp: 12345,
 		Transactions: []ledger.Transaction{
 			{
-				Sender: "Alice",
+				Sender:   "Alice",
 				Receiver: "Bob",
-				Amount: 20,
+				Amount:   20,
 			},
 		},
 		PreviousHash: "0000",
-		Nonce: 10,
+		Nonce:        10,
 	}
 
 	hash1 := CalculateHash(b)

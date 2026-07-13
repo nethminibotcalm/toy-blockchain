@@ -17,9 +17,9 @@ func main() {
 		bc = blockchain.NewBlockchain()
 	}
 
-	l := ledger.NewLedger()
+	balances := blockchain.CalculateBalances(bc.Blocks, bc.InitialBalances)
 
-
+	l := ledger.NewLedger(balances)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a command")
@@ -37,7 +37,7 @@ func main() {
 			return
 		}
 
-		amount, err := strconv.ParseFloat(os.Args[4], 64)
+		amount, err := strconv.Atoi(os.Args[4])
 
 		if err != nil {
 			fmt.Println("Invalid amount")
@@ -50,7 +50,10 @@ func main() {
 			Amount:   amount,
 		}
 
-		bc.AddTransaction(tx)
+		if !bc.AddTransaction(tx) {
+			fmt.Println("Transaction rejected")
+			return
+		}
 
 		err = bc.SaveToFile("chain.json")
 
@@ -82,9 +85,9 @@ func main() {
 
 		fmt.Println("Blockchain valid:", bc.ValidateChain())
 
-case "balance":
-    balances := blockchain.CalculateBalances(bc.Blocks)
-    fmt.Println("Balances:", balances)
+	case "balance":
+		balances := blockchain.CalculateBalances(bc.Blocks, bc.InitialBalances)
+		fmt.Println("Balances:", balances)
 
 	default:
 

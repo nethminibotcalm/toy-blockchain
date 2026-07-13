@@ -4,7 +4,11 @@ import "testing"
 
 func TestRejectOverspendingTransaction(t *testing.T) {
 
-	l := NewLedger()
+	l := NewLedger(map[string]int{
+		"Alice":   100,
+		"Bob":     100,
+		"Charlie": 100,
+	})
 
 	tx := Transaction{
 		Sender:   "Alice",
