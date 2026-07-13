@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-//calculation generated the SHA-256 hash of a block
+// calculation generated the SHA-256 hash of a block
 func CalculateHash(b Block) string {
 	//combine all block fields (expect hash) into one string
 	data := fmt.Sprintf("Index:%d|Timestamp:%d|Transactions:%v|PreviousHash:%s|Nonce:%d", //spritf-combine the block fields into one strin

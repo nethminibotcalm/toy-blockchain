@@ -1,44 +1,60 @@
 package blockchain
 
 import (
-"toy-blockchain/block"
-"strings"
+	"fmt"
+	"strings"
+	"toy-blockchain/block"
 )
 
-func (bc *Blockchain) ValidateChain() bool {
+func (bc *Blockchain) ValidateChain() error {
+
+	// Check genesis block
 	genesis := bc.Blocks[0]
 
-if block.CalculateHash(genesis) != genesis.Hash {
-    return false
-}
+	if block.CalculateHash(genesis) != genesis.Hash {
+		return fmt.Errorf("block 0: invalid genesis hash")
+	}
+
+	// Check remaining blocks
 	for i := 1; i < len(bc.Blocks); i++ {
+
 		current := bc.Blocks[i]
 		previous := bc.Blocks[i-1]
+
+		// Check hash
 		calculatedHash := block.CalculateHash(current)
+
 		if calculatedHash != current.Hash {
-			return false
+			return fmt.Errorf("block %d: invalid hash", i)
 		}
-		difficulty := 4
-prefix := strings.Repeat("0", difficulty)
 
-if !strings.HasPrefix(current.Hash, prefix) {
-	return false
-}
-		// Check if blocks are properly connected
+		// Check previous hash link
 		if current.PreviousHash != previous.Hash {
-			return false
+			return fmt.Errorf("block %d: invalid previous hash link", i)
 		}
-		if current.Timestamp < previous.Timestamp {
-	return false
-}
-if current.Index != previous.Index+1 {
-	return false
-}
-	}
-	if !bc.ValidateBalances() {
-	return false
-}
-	
-	return true
 
+		// Check block order
+		if current.Index != previous.Index+1 {
+			return fmt.Errorf("block %d: invalid index", i)
+		}
+
+		// Check timestamp order
+		if current.Timestamp < previous.Timestamp {
+			return fmt.Errorf("block %d: invalid timestamp order", i)
+		}
+
+		// Check proof of work
+		prefix := strings.Repeat("0", bc.Difficulty)
+
+		if !strings.HasPrefix(current.Hash, prefix) {
+			return fmt.Errorf("block %d: invalid proof of work", i)
+		}
+	}
+
+	// Check transaction balances
+	if !bc.ValidateBalances() {
+		return fmt.Errorf("invalid balances: negative balance or invalid transaction")
+	}
+
+	return nil
 }

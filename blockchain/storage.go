@@ -30,6 +30,8 @@ func LoadFromFile(filename string) (*Blockchain, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	if err := bc.ValidateChain(); err != nil {
+		return nil, err
+	}
 	return &bc, nil
 }

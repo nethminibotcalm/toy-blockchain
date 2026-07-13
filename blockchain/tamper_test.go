@@ -20,7 +20,7 @@ func TestTamperDetection(t *testing.T) {
 	// Simulate hacker changing transaction data
 	bc.Blocks[1].Transactions[0].Amount = 9999
 
-	if bc.ValidateChain() {
-		t.Error("Tampered blockchain was accepted")
+	if err := bc.ValidateChain(); err == nil {
+		t.Fatal("Expected invalid blockchain")
 	}
 }

@@ -1,10 +1,10 @@
 package blockchain
 
 import (
+	"fmt"
 	"time"
 	"toy-blockchain/block"
 	"toy-blockchain/ledger"
-	"fmt"
 )
 
 type Blockchain struct {
@@ -17,7 +17,7 @@ type Blockchain struct {
 func CreateGenesisBlock() block.Block {
 	genesis := block.Block{
 		Index:        0,
-		Timestamp: 0,
+		Timestamp:    0,
 		Transactions: []ledger.Transaction{},
 		PreviousHash: "0000000000000000000000000000000000000000000000000000000000000000",
 		Nonce:        0,
@@ -38,12 +38,12 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 		Nonce:        0,
 	}
 
-attempts, duration := MineBlock(&newBlock, bc.Difficulty)
+	attempts, duration := MineBlock(&newBlock, bc.Difficulty)
 
-fmt.Println("Mining attempts:", attempts)
-fmt.Println("Mining time:", duration)
+	fmt.Println("Mining attempts:", attempts)
+	fmt.Println("Mining time:", duration)
 
-bc.Blocks = append(bc.Blocks, newBlock)
+	bc.Blocks = append(bc.Blocks, newBlock)
 }
 
 // NewBlockchain creates a blockchain with the Genesis Block.
@@ -56,7 +56,6 @@ func NewBlockchain() *Blockchain {
 			"Alice":   100,
 			"Bob":     100,
 			"Charlie": 100,
-			
 		},
 		PendingTransactions: []ledger.Transaction{},
 		Difficulty:          4,

@@ -8,7 +8,7 @@ func TestValidChain(t *testing.T) {
 
 	bc.AddBlock(nil)
 
-	if !bc.ValidateChain() {
-		t.Error("Valid blockchain failed validation")
+	if err := bc.ValidateChain(); err != nil {
+		t.Fatal(err)
 	}
 }

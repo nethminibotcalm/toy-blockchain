@@ -1,7 +1,5 @@
 package blockchain
 
-
-
 func (bc *Blockchain) ValidateBalances() bool {
 
 	balances := make(map[string]int)
