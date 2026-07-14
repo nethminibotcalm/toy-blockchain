@@ -245,6 +245,18 @@ Balances: map[Alice:80 Bob:120 Charlie:100]
 Balances are calculated from blockchain transaction history.
 
 ---
+## Concurrent Mining
+
+The blockchain supports concurrent Proof of Work mining using Go goroutines.
+
+Implementation details:
+- Multiple workers search different nonce ranges.
+- sync.WaitGroup manages worker completion.
+- context cancellation stops remaining workers after a valid nonce is found.
+- atomic counters track mining attempts.
+- mutex protects shared mining results.
+
+---
 
 ## Example Workflow
 

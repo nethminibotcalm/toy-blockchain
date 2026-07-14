@@ -10,17 +10,31 @@
     },
     {
       "Index": 1,
-      "Timestamp": 1783997861,
+      "Timestamp": 1,
       "Transactions": [
         {
           "Sender": "Alice",
           "Receiver": "Bob",
-          "Amount": 25
+          "Amount": 20
         }
       ],
       "PreviousHash": "c5e01c7bd0a5d56a1fcc2b2e16006ca197325facd901e0d0eef8a300d07853a0",
-      "Nonce": 1618,
-      "Hash": "0000a4b95554fb672609861f96f295e8c0e1dbdbb583b3e9443e83e23d0a7bb6"
+      "Nonce": 65721,
+      "Hash": "00009b98b7b94c9330635896a3435fedcadadcdccd01dc0d7605207f1c4752e7"
+    },
+    {
+      "Index": 2,
+      "Timestamp": 2,
+      "Transactions": [
+        {
+          "Sender": "Alice",
+          "Receiver": "Bob",
+          "Amount": 20
+        }
+      ],
+      "PreviousHash": "00009b98b7b94c9330635896a3435fedcadadcdccd01dc0d7605207f1c4752e7",
+      "Nonce": 36798,
+      "Hash": "000029f2e504891565aacc77296c433c5bc12fc29dc3d60a4964ab84e5a1d1a9"
     }
   ],
   "InitialBalances": {
@@ -28,6 +42,12 @@
     "Bob": 100,
     "Charlie": 100
   },
-  "PendingTransactions": [],
+  "PendingTransactions": [
+    {
+      "Sender": "Alice",
+      "Receiver": "Bob",
+      "Amount": 20
+    }
+  ],
   "Difficulty": 4
 }

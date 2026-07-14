@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-bc, err := blockchain.LoadFromFile("chain.json")
+	bc, err := blockchain.LoadFromFile("chain.json")
 
 	if err != nil {
 		if _, statErr := os.Stat("chain.json"); statErr == nil {
@@ -20,10 +20,6 @@ bc, err := blockchain.LoadFromFile("chain.json")
 		}
 		bc = blockchain.NewBlockchain()
 	}
-
-	balances := blockchain.CalculateBalances(bc.Blocks, bc.InitialBalances)
-
-	l := ledger.NewLedger(balances)
 
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a command")
@@ -70,12 +66,19 @@ bc, err := blockchain.LoadFromFile("chain.json")
 
 	case "mine":
 
-		bc.MinePendingTransactions(l)
+		minedBlock, err := bc.MineBlockConcurrent()
+
+		if err != nil {
+			fmt.Println("Mining failed:", err)
+			return
+		}
+
+		bc.Blocks = append(bc.Blocks, minedBlock)
 
 		err = bc.SaveToFile("chain.json")
 
 		if err != nil {
-			fmt.Println("Error saving blockchain:", err)
+			fmt.Println("Save failed:", err)
 			return
 		}
 
