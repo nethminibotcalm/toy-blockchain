@@ -11,9 +11,13 @@ import (
 
 func main() {
 
-	bc, err := blockchain.LoadFromFile("chain.json")
+bc, err := blockchain.LoadFromFile("chain.json")
 
 	if err != nil {
+		if _, statErr := os.Stat("chain.json"); statErr == nil {
+			fmt.Println("Warning: chain.json exists but could not be loaded:", err)
+			fmt.Println("Starting a new blockchain instead.")
+		}
 		bc = blockchain.NewBlockchain()
 	}
 

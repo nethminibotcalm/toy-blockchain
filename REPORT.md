@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This project implements a command-line (CLI) Toy Blockchain and Ledger Simulator using Go 1.22+. The objective is to demonstrate the fundamental concepts behind blockchain technology, including cryptographic hashing, Proof of Work (PoW), transaction validation, blockchain integrity, and persistent storage.
+This project implements a command-line (CLI) Toy Blockchain and Ledger Simulator in Go. The objective is to demonstrate the fundamental concepts behind blockchain technology, including cryptographic hashing, Proof of Work (PoW), transaction validation, blockchain integrity, and persistent storage.
 
 Unlike production blockchain systems, this implementation focuses on educational purposes by providing a simplified blockchain that runs on a single machine without networking or distributed consensus.
 
@@ -14,10 +14,10 @@ The system allows users to add transactions, mine new blocks, validate the block
 
 The project is organized into several packages, each with a specific responsibility.
 
-* **block** – Defines the structure of a block and implements SHA-256 hashing.
-* **blockchain** – Manages the blockchain, mining, validation, balance calculation, printing, and persistence.
-* **ledger** – Validates transactions and manages account balances.
-* **main.go** – Provides the command-line interface and coordinates the entire application.
+* **block** – Defines the block structure and SHA-256 hashing logic.
+* **blockchain** – Manages the chain, mining, validation, balance calculation, printing, and persistence.
+* **ledger** – Validates transactions and tracks account balances.
+* **main.go** – Provides the command-line interface and coordinates the application flow.
 
 This modular structure improves readability, maintainability, and testing while avoiding unnecessary dependencies between packages.
 
@@ -34,7 +34,7 @@ Each block contains the following information:
 * Nonce
 * Current Block Hash
 
-Each block is connected to the previous block through the `PreviousHash` field, forming a chain of blocks. Any modification to a block changes its hash, causing all subsequent blocks to become invalid.
+Each block is connected to the previous block through the `PreviousHash` field, forming a chain of blocks. The genesis block is created with a fixed timestamp of `0` and a fixed previous-hash value so that the first block is deterministic across runs.
 
 ---
 
@@ -42,7 +42,7 @@ Each block is connected to the previous block through the `PreviousHash` field, 
 
 The project uses the SHA-256 cryptographic hash function to generate a unique identifier for each block.
 
-The hash is calculated using:
+The hash is calculated from a labeled string that includes:
 
 * Block Index
 * Timestamp
@@ -50,7 +50,7 @@ The hash is calculated using:
 * Previous Hash
 * Nonce
 
-A key property of SHA-256 is that even a small change to the input produces a completely different output hash. This characteristic makes it possible to detect any modification to blockchain data.
+A key property of SHA-256 is that even a small change to the input produces a completely different output hash. The implementation also separates the block fields with labels and delimiters, so different blocks do not collapse into the same hash input string.
 
 For example:
 
@@ -74,13 +74,7 @@ Although only one digit changes, the resulting hash becomes completely different
 
 To add a new block, the blockchain performs Proof of Work (PoW).
 
-Mining repeatedly changes the block's nonce until the calculated SHA-256 hash begins with the required number of leading zeros.
-
-Current mining difficulty:
-
-```
-Difficulty = 4
-```
+Mining repeatedly changes the block's nonce until the calculated SHA-256 hash begins with the required number of leading zeros. In the current implementation, the blockchain is initialized with a difficulty of `4`, and mining prints both the number of attempts and the elapsed time.
 
 Example of a valid hash:
 
@@ -98,7 +92,7 @@ Before transactions are added to a block, the ledger validates each transaction.
 
 The following rules are applied:
 
-* Transaction amount must be greater than zero.
+* Transaction amount must be a positive integer.
 * The sender must exist.
 * The sender must have sufficient balance.
 
@@ -108,15 +102,19 @@ Only valid transactions are included in newly mined blocks.
 
 # 7. Blockchain Validation
 
-The blockchain can be validated at any time using the validation command.
+The blockchain can be validated at any time using the validation command, and chains loaded from `chain.json` are validated before use.
 
 Validation performs the following checks:
 
-1. Recalculate each block's hash and compare it with the stored hash.
-2. Verify that each block's `PreviousHash` matches the previous block's hash.
-3. Verify that each block satisfies the configured Proof of Work difficulty.
+1. Recalculate the genesis block hash and compare it with the stored hash.
+2. Recalculate each block's hash and compare it with the stored hash.
+3. Verify that each block's `PreviousHash` matches the previous block's hash.
+4. Verify that each block index increases by one.
+5. Verify that timestamps do not move backward.
+6. Verify that each block satisfies the configured Proof of Work difficulty.
+7. Replay balances across the chain to detect invalid transaction flows.
 
-If any of these checks fail, the blockchain is considered invalid.
+If any of these checks fail, the blockchain is considered invalid, and the validation error identifies the block that failed.
 
 ---
 
@@ -154,20 +152,24 @@ Blockchain valid: false
 
 ### Observation
 
-Changing transaction data modifies the calculated block hash. Since the stored hash no longer matches the recalculated hash, blockchain validation fails. This demonstrates how cryptographic hashing protects the integrity of blockchain data.
+Changing transaction data modifies the calculated block hash. If the tampered block is not mined again correctly, validation fails because the stored hash, the proof-of-work prefix, or the replayed balances no longer match the chain. This demonstrates how cryptographic hashing protects the integrity of blockchain data.
 
 ---
 
 # 9. Difficulty vs. Mining Effort
 
-| Difficulty      | Expected Mining Effort |
-| --------------- | ---------------------- |
-| 2 leading zeros | Low                    |
-| 3 leading zeros | Medium                 |
-| 4 leading zeros | High                   |
-| 5 leading zeros | Very High              |
+The blockchain runs with a fixed difficulty of 4 by default, but the mining function accepts difficulty as a parameter. To study the relationship between difficulty and effort, the same block was mined at difficulty levels 1 through 6 using the project's own `MineBlock` function, and the attempt count and elapsed time were recorded for each run.
 
-As the required number of leading zeros increases, the probability of finding a valid hash decreases. Consequently, more nonce values must be tested before successfully mining a block.
+| Difficulty | Attempts  | Time        |
+| ---------- | --------- | ----------- |
+| 1          | 5         | 0.28 ms     |
+| 2          | 5         | 0.01 ms     |
+| 3          | 5         | 0.01 ms     |
+| 4          | 37,931    | 92.5 ms     |
+| 5          | 722,077   | 1.78 s      |
+| 6          | 4,949,561 | 11.85 s     |
+
+At low difficulty (1-3 leading zero hex digits) a valid hash is found almost immediately, since roughly 1 in 16 hashes already satisfies a single leading zero. From difficulty 4 onward the cost grows sharply: each additional required hex digit multiplies the expected number of attempts by roughly 16, since each hex digit has 16 possible values and the hash function behaves like a uniform random source. The growth is therefore exponential in the difficulty, not linear — going from difficulty 4 to 6 increases attempts by roughly 130x, consistent with 16^2 = 256 in expectation. This matches the theoretical model of proof-of-work: doubling the difficulty target does not double the work, it multiplies it.
 
 ---
 
@@ -208,6 +210,9 @@ The project includes automated unit tests covering:
 * Tamper detection
 * Ledger validation
 * Balance calculation
+* Mining difficulty
+* Double-spending prevention
+* Persistence round-trip behavior
 
 Running the tests:
 
@@ -221,6 +226,6 @@ All implemented tests complete successfully.
 
 # 13. Conclusion
 
-This project successfully demonstrates the core principles of blockchain technology through a simplified command-line application developed in Go. The implementation includes block creation, cryptographic hashing, Proof of Work mining, transaction validation, blockchain validation, persistence, and automated testing.
+This project demonstrates the core principles of blockchain technology through a simplified command-line application developed in Go. The implementation includes deterministic block creation, cryptographic hashing, Proof of Work mining, transaction validation, blockchain validation, persistence, and automated testing.
 
-Although simplified, the project illustrates the essential mechanisms used by real blockchain systems to ensure data integrity, detect tampering, and maintain a secure sequence of transactions. It provides a strong foundation for understanding more advanced blockchain technologies such as distributed consensus, digital signatures, peer-to-peer networking, and smart contracts.
+Although simplified, the project illustrates the essential mechanisms used by real blockchain systems to ensure data integrity, detect tampering, and maintain a secure sequence of transactions. It provides a foundation for understanding more advanced blockchain technologies such as distributed consensus, digital signatures, peer-to-peer networking, and smart contracts.

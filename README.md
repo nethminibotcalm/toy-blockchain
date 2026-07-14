@@ -1,8 +1,8 @@
 # Toy Blockchain and Ledger Simulator
 
-A command-line blockchain simulator built in **Go 1.22+** as part of a Software Engineering Internship assessment.
+A command-line blockchain simulator developed using **Go 1.22+** as part of a Software Engineering Internship assessment.
 
-This project demonstrates the core concepts of blockchain technology, including block creation, SHA-256 hashing, Proof of Work mining, transaction validation, ledger management, blockchain validation, persistence, and testing.
+This project demonstrates the core concepts of blockchain technology including block creation, SHA-256 hashing, Proof of Work mining, transaction validation, ledger management, blockchain validation, persistence, and testing.
 
 ---
 
@@ -10,50 +10,65 @@ This project demonstrates the core concepts of blockchain technology, including 
 
 ### Blockchain
 
-* Genesis block creation
-* Block linking using previous block hashes
-* SHA-256 deterministic hashing
-* Blockchain validation
-* Tamper detection
+- Genesis block creation
+- Deterministic genesis block
+- Block linking using previous block hashes
+- SHA-256 hash generation
+- Structured hash calculation
+- Blockchain validation
+- Tamper detection
+- Detailed validation error reporting
+- Validation after loading blockchain data
 
-### Proof of Work (PoW)
+### Proof of Work
 
-* Adjustable mining difficulty
-* Nonce-based mining
-* Blocks are mined only when the hash satisfies the required difficulty
+- Configurable mining difficulty
+- Nonce-based mining
+- Hash difficulty verification
+- Mining attempt count reporting
+- Mining execution time reporting
 
-### Transactions & Ledger
+### Transactions and Ledger
 
-* Transaction model (Sender, Receiver, Amount)
-* Pending transaction pool
-* Transaction validation
-* Initial account balances
-* Balance calculation from blockchain history
+- Transaction model with sender, receiver, and amount
+- Integer-based transaction amounts
+- Pending transaction pool
+- Transaction validation
+- Balance calculation from blockchain history
+- Double-spending prevention
+- Ledger state derived from blockchain data
 
 ### Persistence
 
-* Save blockchain to a JSON file
-* Load blockchain from a JSON file
-* Blockchain survives program restarts
+- Save blockchain data into JSON format
+- Load blockchain data from JSON file
+- Validate blockchain after loading
+- Maintain blockchain state after restarting application
 
 ### Testing
 
-* Hash determinism tests
-* Blockchain validation tests
-* Tamper detection tests
-* Ledger validation tests
+Implemented tests for:
+
+- Hash generation
+- Blockchain validation
+- Tamper detection
+- Mining difficulty
+- Ledger validation
+- Persistence
+- Double-spending prevention
 
 ---
 
-# Project Structure
+## Project Structure
 
-```text
+```
 toy-blockchain/
 │
 ├── main.go
 ├── chain.json
-├── README.md
 ├── go.mod
+├── README.md
+├── REPORT.md
 │
 ├── block/
 │   ├── block.go
@@ -61,31 +76,32 @@ toy-blockchain/
 │   └── hash_test.go
 │
 ├── blockchain/
-│   ├── blockchain.go
-│   ├── mining.go
-│   ├── validate.go
-│   ├── storage.go
-│   ├── print.go
 │   ├── balance.go
-│   ├── validate_test.go
-│   └── tamper_test.go
+│   ├── balance_validation.go
+│   ├── blockchain.go
+│   ├── double_spend_test.go
+│   ├── mining.go
+│   ├── mining_test.go
+│   ├── print.go
+│   ├── storage.go
+│   ├── storage_test.go
+│   ├── tamper_test.go
+│   ├── validate.go
+│   └── validate_test.go
 │
-├── ledger/
-│   ├── ledger.go
-│   ├── transaction.go
-│   └── ledger_test.go
-│
-├── cli/
-└── storage/
+└── ledger/
+    ├── ledger.go
+    ├── ledger_test.go
+    └── transaction.go
 ```
 
 ---
 
-# Requirements
+## Requirements
 
-* Go 1.22 or later
+- Go 1.22 or later
 
-Verify your Go installation:
+Check Go installation:
 
 ```bash
 go version
@@ -93,7 +109,7 @@ go version
 
 ---
 
-# Installation
+## Installation
 
 Clone the repository:
 
@@ -101,7 +117,7 @@ Clone the repository:
 git clone <repository-url>
 ```
 
-Move into the project directory:
+Navigate into the project:
 
 ```bash
 cd toy-blockchain
@@ -115,52 +131,77 @@ go mod tidy
 
 ---
 
-# Running the Application
+## Running the Application
 
-## Add a Transaction
+### Add a Transaction
+
+Command:
 
 ```bash
 go run . add Alice Bob 20
 ```
 
-This creates a pending transaction.
+Example output:
 
----
+```
+Transaction added
+```
 
-## Mine Pending Transactions
+The transaction is added to the pending transaction pool.
+
+### Mine Pending Transactions
+
+Command:
 
 ```bash
 go run . mine
 ```
 
-The application:
+During mining:
 
-* Validates all pending transactions
-* Creates a new block
-* Performs Proof of Work mining
-* Adds the block to the blockchain
-* Saves the blockchain to `chain.json`
+- Pending transactions are validated
+- A new block is created
+- Proof of Work is performed
+- The mined block is added to the blockchain
+- Blockchain data is saved to `chain.json`
 
----
+Example output:
 
-## Print the Blockchain
+```
+Mining attempts: 1619
+Mining time: 5.462ms
+Mining completed
+```
+
+### Print Blockchain
+
+Command:
 
 ```bash
 go run . print
 ```
 
-Displays all blocks, including:
+Displays:
 
-* Block index
-* Timestamp
-* Transactions
-* Previous hash
-* Hash
-* Nonce
+- Block index
+- Transactions
+- Nonce
+- Previous hash
+- Block hash
 
----
+Example output:
 
-## Validate the Blockchain
+```
+Index: 1
+Transactions: [{Alice Bob 20}]
+Nonce: 1618
+Previous Hash: ...
+Hash: 0000....
+```
+
+### Validate Blockchain
+
+Command:
 
 ```bash
 go run . validate
@@ -168,13 +209,28 @@ go run . validate
 
 Example output:
 
-```text
-Blockchain valid: true
+```
+Blockchain is valid
 ```
 
----
+If validation fails:
 
-## View Account Balances
+```
+Blockchain is invalid: block 2: invalid hash
+```
+
+Validation checks:
+
+- Hash correctness
+- Previous block connection
+- Block order
+- Timestamp order
+- Proof of Work difficulty
+- Transaction balance validity
+
+### View Balances
+
+Command:
 
 ```bash
 go run . balance
@@ -182,115 +238,91 @@ go run . balance
 
 Example output:
 
-```text
-Alice: 80
-Bob: 120
-Charlie: 100
 ```
+Balances: map[Alice:80 Bob:120 Charlie:100]
+```
+
+Balances are calculated from blockchain transaction history.
 
 ---
 
-# Example Workflow
+## Example Workflow
 
-### Step 1
+1. Add transaction
 
-Add a transaction:
+   ```bash
+   go run . add Alice Bob 20
+   ```
 
-```bash
-go run . add Alice Bob 20
-```
+2. Mine transaction
 
-### Step 2
+   ```bash
+   go run . mine
+   ```
 
-Mine the pending transaction:
+3. View blockchain
 
-```bash
-go run . mine
-```
+   ```bash
+   go run . print
+   ```
 
-### Step 3
+4. Validate blockchain
 
-Print the blockchain:
+   ```bash
+   go run . validate
+   ```
 
-```bash
-go run . print
-```
+5. View balances
 
-### Step 4
-
-Validate the blockchain:
-
-```bash
-go run . validate
-```
-
-### Step 5
-
-View balances:
-
-```bash
-go run . balance
-```
+   ```bash
+   go run . balance
+   ```
 
 ---
 
-# How It Works
+## How It Works
 
-1. A transaction is added to the pending transaction pool.
-2. During mining, all pending transactions are validated.
-3. A new block is created containing the valid transactions.
-4. The miner searches for a nonce that produces a SHA-256 hash satisfying the mining difficulty.
-5. The mined block is appended to the blockchain.
-6. The blockchain is saved to `chain.json`.
-7. On the next application start, the blockchain is loaded from the JSON file.
-
----
-
-# Blockchain Validation
-
-Each block is verified by checking:
-
-* The stored hash matches the recalculated hash.
-* The `PreviousHash` matches the previous block's hash.
-* The block satisfies the configured Proof of Work difficulty.
-* The blockchain has not been tampered with.
-
-If any check fails, the blockchain is considered invalid.
+1. A user creates a transaction.
+2. The transaction is stored in the pending transaction pool.
+3. Pending transactions are validated before mining.
+4. A new block is created with valid transactions.
+5. Proof of Work searches for a valid nonce.
+6. The block is added to the blockchain.
+7. Blockchain data is stored in `chain.json`.
+8. When restarting, blockchain data is loaded and validated.
+9. Account balances are calculated from blockchain history.
 
 ---
 
-# Proof of Work
+## Proof of Work
 
-This project implements a simple Proof of Work algorithm.
+This project uses a simple Proof of Work algorithm.
 
-Mining repeatedly changes the block's nonce until the generated SHA-256 hash begins with the required number of leading zeros.
+Mining changes the block nonce until the SHA-256 hash satisfies the required difficulty.
 
-Example:
+Example (difficulty: 4), a valid hash:
 
-```text
-Difficulty: 4
-
-Valid Hash:
+```
 00005a1bbfe0f1f8139082808cb1357da5bf6acf0825b988920a87c3276e238a
 ```
 
-Increasing the difficulty increases the computational effort required to mine a block.
+Higher difficulty requires more mining attempts.
 
 ---
 
-# Persistence
+## Persistence
 
-The blockchain is stored in:
+Blockchain data is stored in:
 
-```text
+```
 chain.json
 ```
 
-This allows the blockchain to persist between program executions.
+The saved blockchain is loaded during application startup and validated before use.
 
 ---
 
-# Running Tests
+## Running Tests
 
 Run all tests:
 
@@ -300,7 +332,7 @@ go test ./...
 
 Example output:
 
-```text
+```
 ok      toy-blockchain/block
 ok      toy-blockchain/blockchain
 ok      toy-blockchain/ledger
@@ -308,36 +340,34 @@ ok      toy-blockchain/ledger
 
 ---
 
-# Current Limitations
+## Current Limitations
 
-This project is designed for educational purposes and does not include:
+This project is created for educational purposes and does not include:
 
-* Peer-to-peer networking
-* Digital signatures
-* Public/private key cryptography
-* Wallet management
-* Distributed consensus
-* Multiple mining nodes
-* Smart contracts
-* Merkle trees
-
----
-
-# Future Improvements
-
-Possible enhancements include:
-
-* Digital wallet support
-* Cryptographic signatures
-* Peer-to-peer networking
-* REST API
-* Multiple miners
-* Dynamic mining difficulty
-* Merkle tree implementation
-* Web interface
+- Peer-to-peer networking
+- Digital signatures
+- Wallet management
+- Distributed consensus
+- Multiple blockchain nodes
+- Smart contracts
+- Merkle trees
 
 ---
 
-# Author
+## Future Improvements
 
-Developed as part of a Software Engineering Internship take-home assessment using Go 1.22+.
+Possible improvements:
+
+- Digital wallet implementation
+- Cryptographic signatures
+- REST API support
+- Web interface
+- Multiple blockchain nodes
+- Adaptive mining difficulty
+- Merkle tree implementation
+
+---
+
+## Author
+
+Developed as part of a Software Engineering Internship take-home assessment using Go.
