@@ -1,0 +1,33 @@
+{
+  "Blocks": [
+    {
+      "Index": 0,
+      "Timestamp": 0,
+      "Transactions": [],
+      "PreviousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "Nonce": 0,
+      "Hash": "c5e01c7bd0a5d56a1fcc2b2e16006ca197325facd901e0d0eef8a300d07853a0"
+    },
+    {
+      "Index": 1,
+      "Timestamp": 1783997861,
+      "Transactions": [
+        {
+          "Sender": "Alice",
+          "Receiver": "Bob",
+          "Amount": 25
+        }
+      ],
+      "PreviousHash": "c5e01c7bd0a5d56a1fcc2b2e16006ca197325facd901e0d0eef8a300d07853a0",
+      "Nonce": 1618,
+      "Hash": "0000a4b95554fb672609861f96f295e8c0e1dbdbb583b3e9443e83e23d0a7bb6"
+    }
+  ],
+  "InitialBalances": {
+    "Alice": 100,
+    "Bob": 100,
+    "Charlie": 100
+  },
+  "PendingTransactions": [],
+  "Difficulty": 4
+}

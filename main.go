@@ -83,7 +83,13 @@ func main() {
 
 	case "validate":
 
-		fmt.Println("Blockchain valid:", bc.ValidateChain())
+		err := bc.ValidateChain()
+
+		if err != nil {
+			fmt.Println("Blockchain is invalid:", err)
+		} else {
+			fmt.Println("Blockchain is valid")
+		}
 
 	case "balance":
 		balances := blockchain.CalculateBalances(bc.Blocks, bc.InitialBalances)
