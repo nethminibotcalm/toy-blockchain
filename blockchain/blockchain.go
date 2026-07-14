@@ -5,6 +5,7 @@ import (
 	"time"
 	"toy-blockchain/block"
 	"toy-blockchain/ledger"
+	"toy-blockchain/wallet"
 )
 
 type Blockchain struct {
@@ -27,7 +28,7 @@ func CreateGenesisBlock() block.Block {
 	return genesis
 }
 func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
-
+	
 	lastBlock := bc.Blocks[len(bc.Blocks)-1]
 
 	newBlock := block.Block{
@@ -99,6 +100,9 @@ func (bc *Blockchain) MinePendingTransactions(l *ledger.Ledger) {
 	bc.PendingTransactions = []ledger.Transaction{}
 }
 func (bc *Blockchain) AddTransaction(t ledger.Transaction) bool {
+	if !wallet.VerifyTransaction(t) {
+    return false
+}
 	balances := CalculateBalances(bc.Blocks, bc.InitialBalances)
 	tempLedger := ledger.NewLedger(balances)
 
@@ -114,4 +118,9 @@ func (bc *Blockchain) AddTransaction(t ledger.Transaction) bool {
 
 	bc.PendingTransactions = append(bc.PendingTransactions, t)
 	return true
+}
+func ValidateTransactionSignature(tx ledger.Transaction) bool {
+
+	return wallet.VerifyTransaction(tx)
+
 }

@@ -10,11 +10,12 @@ import (
 func TestSaveAndLoadPreservesBalances(t *testing.T) {
 	bc := NewBlockchain()
 
-	if !bc.AddTransaction(ledger.Transaction{
-		Sender:   "Alice",
-		Receiver: "Bob",
-		Amount:   25,
-	}) {
+	if !bc.AddTransaction(createSignedTransaction(
+		t,
+		"Alice",
+		"Bob",
+		25,
+	)) {
 		t.Fatal("expected transaction to be accepted")
 	}
 

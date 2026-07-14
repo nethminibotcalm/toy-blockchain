@@ -7,6 +7,7 @@ import (
 
 	"toy-blockchain/blockchain"
 	"toy-blockchain/ledger"
+	"toy-blockchain/wallet"
 )
 
 func main() {
@@ -49,6 +50,26 @@ func main() {
 			Receiver: os.Args[3],
 			Amount:   amount,
 		}
+		
+
+		senderWallet, exists := wallet.GetWallet(tx.Sender)
+
+		if !exists {
+			fmt.Println("Sender wallet not found")
+			return
+		}
+
+		signedTx, err := wallet.SignTransaction(
+			tx,
+			senderWallet,
+		)
+
+		if err != nil {
+			fmt.Println("Signing failed:", err)
+			return
+		}
+
+		tx = signedTx
 
 		if !bc.AddTransaction(tx) {
 			fmt.Println("Transaction rejected")
@@ -101,6 +122,21 @@ func main() {
 	case "balance":
 		balances := blockchain.CalculateBalances(bc.Blocks, bc.InitialBalances)
 		fmt.Println("Balances:", balances)
+	case "wallet":
+
+		if len(os.Args) < 3 {
+			fmt.Println("Usage: wallet <name>")
+			return
+		}
+
+		err := wallet.CreateWallet(os.Args[2])
+
+		if err != nil {
+			fmt.Println("Wallet creation failed")
+			return
+		}
+
+		fmt.Println("Wallet created for", os.Args[2])
 
 	default:
 

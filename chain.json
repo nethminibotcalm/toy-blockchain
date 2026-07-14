@@ -7,34 +7,6 @@
       "PreviousHash": "0000000000000000000000000000000000000000000000000000000000000000",
       "Nonce": 0,
       "Hash": "c5e01c7bd0a5d56a1fcc2b2e16006ca197325facd901e0d0eef8a300d07853a0"
-    },
-    {
-      "Index": 1,
-      "Timestamp": 1,
-      "Transactions": [
-        {
-          "Sender": "Alice",
-          "Receiver": "Bob",
-          "Amount": 20
-        }
-      ],
-      "PreviousHash": "c5e01c7bd0a5d56a1fcc2b2e16006ca197325facd901e0d0eef8a300d07853a0",
-      "Nonce": 65721,
-      "Hash": "00009b98b7b94c9330635896a3435fedcadadcdccd01dc0d7605207f1c4752e7"
-    },
-    {
-      "Index": 2,
-      "Timestamp": 2,
-      "Transactions": [
-        {
-          "Sender": "Alice",
-          "Receiver": "Bob",
-          "Amount": 20
-        }
-      ],
-      "PreviousHash": "00009b98b7b94c9330635896a3435fedcadadcdccd01dc0d7605207f1c4752e7",
-      "Nonce": 36798,
-      "Hash": "000029f2e504891565aacc77296c433c5bc12fc29dc3d60a4964ab84e5a1d1a9"
     }
   ],
   "InitialBalances": {
@@ -46,7 +18,23 @@
     {
       "Sender": "Alice",
       "Receiver": "Bob",
-      "Amount": 20
+      "Amount": 20,
+      "Signature": "",
+      "PublicKey": ""
+    },
+    {
+      "Sender": "Alice",
+      "Receiver": "Bob",
+      "Amount": 20,
+      "Signature": "85e60632897925484bf13b425837f07b7ae5b603842a7aed9e9f9a86b42cd39221ee82b0551dc03a7491a693d78833bf5a641e5ed81b8a60fd7306d2d7efdf60",
+      "PublicKey": "5c8b1c6fef735e877ace1ebc1d6fa3fbfc5c58088c23cee8ea3be9fc03a01978512dbd78d144a270946b539bcfd51e133f298a02b4de4ea9451aa760d3eda7ff"
+    },
+    {
+      "Sender": "Alice",
+      "Receiver": "Bob",
+      "Amount": 20,
+      "Signature": "b26eb34d05168c68321d0cf4fe7edb68c91c7ff5c61978f5751aabbb6647a18625ad1c58ae4170c6c87d5efff62359676215dc0847e5b3712d9a5fa3beb54c67",
+      "PublicKey": "5c8b1c6fef735e877ace1ebc1d6fa3fbfc5c58088c23cee8ea3be9fc03a01978512dbd78d144a270946b539bcfd51e133f298a02b4de4ea9451aa760d3eda7ff"
     }
   ],
   "Difficulty": 4

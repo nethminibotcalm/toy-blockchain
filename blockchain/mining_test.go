@@ -10,11 +10,12 @@ func TestMiningDifficulty(t *testing.T) {
 
 	bc := NewBlockchain()
 
-	tx := ledger.Transaction{
-		Sender:   "Alice",
-		Receiver: "Bob",
-		Amount:   50,
-	}
+	tx := createSignedTransaction(
+		t,
+		"Alice",
+		"Bob",
+		20,
+	)
 
 	if !bc.AddTransaction(tx) {
 		t.Fatal("expected transaction to be accepted")
@@ -46,19 +47,21 @@ func TestMiningDifficulty(t *testing.T) {
 func TestRejectPendingDoubleSpend(t *testing.T) {
 	bc := NewBlockchain()
 
-	if !bc.AddTransaction(ledger.Transaction{
-		Sender:   "Alice",
-		Receiver: "Bob",
-		Amount:   80,
-	}) {
+	if !bc.AddTransaction(createSignedTransaction(
+		t,
+		"Alice",
+		"Bob",
+		80,
+	)) {
 		t.Fatal("expected first transaction to be accepted")
 	}
 
-	if bc.AddTransaction(ledger.Transaction{
-		Sender:   "Alice",
-		Receiver: "Charlie",
-		Amount:   30,
-	}) {
+	if bc.AddTransaction(createSignedTransaction(
+		t,
+		"Alice",
+		"Bob",
+		30,
+	)) {
 		t.Fatal("expected overspending transaction to be rejected")
 	}
 
