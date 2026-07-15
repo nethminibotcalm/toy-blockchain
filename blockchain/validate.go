@@ -57,7 +57,7 @@ func (bc *Blockchain) ValidateChain() error {
 		}
 
 		// Check proof of work
-		prefix := strings.Repeat("0", bc.Difficulty)
+		prefix := strings.Repeat("0", current.Difficulty)
 		if !strings.HasPrefix(current.Hash, prefix) {
 			return fmt.Errorf("block %d: invalid proof of work", i)
 		}

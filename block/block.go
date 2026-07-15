@@ -10,4 +10,5 @@ type Block struct {
 	Nonce        int
 	Hash         string
 	MerkleRoot   string
+	Difficulty int
 }

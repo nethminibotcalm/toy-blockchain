@@ -9,13 +9,14 @@ import (
 // calculation generated the SHA-256 hash of a block
 func CalculateHash(b Block) string {
 	//combine all block fields (expect hash) into one string
-	data := fmt.Sprintf("Index:%d|Timestamp:%d|Transactions:%v|PreviousHash:%s|MerkleRoot:%s|Nonce:%d", //spritf-combine the block fields into one strin
+	data := fmt.Sprintf("Index:%d|Timestamp:%d|Transactions:%v|PreviousHash:%s|MerkleRoot:%s|Nonce:%d|Difficulty:%d", //spritf-combine the block fields into one strin
 		b.Index,
 		b.Timestamp,
 		b.Transactions,
 		b.PreviousHash,
 		b.MerkleRoot,
-		b.Nonce)
+		b.Nonce,
+		b.Difficulty)
 	//Generate SHA-256 hash(convert into bytes).
 	hash := sha256.Sum256([]byte(data))
 	//convert the hash bytes into a hexadecimal string.

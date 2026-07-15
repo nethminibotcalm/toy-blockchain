@@ -14,6 +14,10 @@ type Blockchain struct {
 	PendingTransactions []ledger.Transaction
 	Difficulty          int
 }
+const (
+	TargetBlockTime      int64 = 10
+	AdjustmentInterval         = 5
+)
 
 func CreateGenesisBlock() block.Block {
 	genesis := block.Block{
@@ -23,6 +27,7 @@ func CreateGenesisBlock() block.Block {
 		PreviousHash: "0000000000000000000000000000000000000000000000000000000000000000",
 		Nonce:        0,
 		MerkleRoot: "",
+		Difficulty: 4,
 	}
 	// Calculate and assign the hash.
 	genesis.Hash = block.CalculateHash(genesis)
@@ -40,6 +45,7 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 		Nonce:        0,
 		MerkleRoot:
 		block.CalculateMerkleRoot(transactions),
+		Difficulty: bc.Difficulty,
 	}
 
 	attempts, duration := MineBlock(&newBlock, bc.Difficulty)
@@ -48,6 +54,7 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 	fmt.Println("Mining time:", duration)
 
 	bc.Blocks = append(bc.Blocks, newBlock)
+	bc.AdjustDifficulty()
 }
 
 // NewBlockchain creates a blockchain with the Genesis Block.
@@ -60,6 +67,7 @@ func NewBlockchain() *Blockchain {
 			"Alice":   100,
 			"Bob":     100,
 			"Charlie": 100,
+			
 		},
 		PendingTransactions: []ledger.Transaction{},
 		Difficulty:          4,
