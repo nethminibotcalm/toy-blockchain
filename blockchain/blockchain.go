@@ -22,6 +22,7 @@ func CreateGenesisBlock() block.Block {
 		Transactions: []ledger.Transaction{},
 		PreviousHash: "0000000000000000000000000000000000000000000000000000000000000000",
 		Nonce:        0,
+		MerkleRoot: "",
 	}
 	// Calculate and assign the hash.
 	genesis.Hash = block.CalculateHash(genesis)
@@ -37,6 +38,8 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 		Transactions: transactions,
 		PreviousHash: lastBlock.Hash,
 		Nonce:        0,
+		MerkleRoot:
+		block.CalculateMerkleRoot(transactions),
 	}
 
 	attempts, duration := MineBlock(&newBlock, bc.Difficulty)

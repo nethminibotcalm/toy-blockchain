@@ -9,4 +9,5 @@ type Block struct {
 	PreviousHash string
 	Nonce        int
 	Hash         string
+	MerkleRoot   string
 }

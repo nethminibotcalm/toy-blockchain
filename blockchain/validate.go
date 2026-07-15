@@ -3,6 +3,7 @@ package blockchain
 import (
 	"fmt"
 	"strings"
+
 	"toy-blockchain/block"
 )
 
@@ -11,6 +12,13 @@ func (bc *Blockchain) ValidateChain() error {
 	// Check genesis block
 	genesis := bc.Blocks[0]
 
+	// Validate genesis Merkle root
+	calculatedRoot := block.CalculateMerkleRoot(genesis.Transactions)
+	if calculatedRoot != genesis.MerkleRoot {
+		return fmt.Errorf("block 0: invalid Merkle root")
+	}
+
+	// Validate genesis hash
 	if block.CalculateHash(genesis) != genesis.Hash {
 		return fmt.Errorf("block 0: invalid genesis hash")
 	}
@@ -21,9 +29,14 @@ func (bc *Blockchain) ValidateChain() error {
 		current := bc.Blocks[i]
 		previous := bc.Blocks[i-1]
 
-		// Check hash
-		calculatedHash := block.CalculateHash(current)
+		// Check Merkle root
+		calculatedRoot := block.CalculateMerkleRoot(current.Transactions)
+		if calculatedRoot != current.MerkleRoot {
+			return fmt.Errorf("block %d: invalid Merkle root", i)
+		}
 
+		// Check block hash
+		calculatedHash := block.CalculateHash(current)
 		if calculatedHash != current.Hash {
 			return fmt.Errorf("block %d: invalid hash", i)
 		}
@@ -45,7 +58,6 @@ func (bc *Blockchain) ValidateChain() error {
 
 		// Check proof of work
 		prefix := strings.Repeat("0", bc.Difficulty)
-
 		if !strings.HasPrefix(current.Hash, prefix) {
 			return fmt.Errorf("block %d: invalid proof of work", i)
 		}
