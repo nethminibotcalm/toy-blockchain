@@ -2,7 +2,7 @@
 
 A command-line blockchain simulator developed using **Go 1.22+** as part of a Software Engineering Internship assessment.
 
-This project demonstrates the core concepts of blockchain technology including block creation, SHA-256 hashing, Proof of Work mining, transaction validation, ledger management, blockchain validation, persistence, and testing.
+This project demonstrates core blockchain concepts including block creation, SHA-256 hashing, Proof of Work mining, transaction validation, ledger management, digital signatures, Merkle roots, dynamic difficulty adjustment, fork resolution, blockchain validation, persistence, and testing.
 
 ---
 
@@ -19,10 +19,14 @@ This project demonstrates the core concepts of blockchain technology including b
 - Tamper detection
 - Detailed validation error reporting
 - Validation after loading blockchain data
+- Merkle root based transaction summarization
+- Automatic difficulty retargeting
+- Fork resolution using longest valid chain rule
 
 ### Proof of Work
 
 - Configurable mining difficulty
+- Automatic difficulty adjustment based on block generation time
 - Nonce-based mining
 - Hash difficulty verification
 - Mining attempt count reporting
@@ -38,6 +42,15 @@ This project demonstrates the core concepts of blockchain technology including b
 - Double-spending prevention
 - Ledger state derived from blockchain data
 
+### Digital Signatures and Wallets
+
+- ECDSA key pair generation
+- Wallet creation and storage
+- Transaction signing using private keys
+- Signature verification using public keys
+- Invalid signature rejection
+- Cryptographic transaction authentication
+
 ### Persistence
 
 - Save blockchain data into JSON format
@@ -50,22 +63,28 @@ This project demonstrates the core concepts of blockchain technology including b
 Implemented tests for:
 
 - Hash generation
+- Merkle root calculation
 - Blockchain validation
 - Tamper detection
 - Mining difficulty
+- Concurrent mining
+- Difficulty retargeting
+- Fork resolution
 - Ledger validation
 - Persistence
 - Double-spending prevention
+- Digital signature verification
 
 ---
 
 ## Project Structure
 
 ```
-toy-blockchain/
+
+
+---toy-blockchain/
 │
 ├── main.go
-├── chain.json
 ├── go.mod
 ├── README.md
 ├── REPORT.md
@@ -73,29 +92,47 @@ toy-blockchain/
 ├── block/
 │   ├── block.go
 │   ├── hash.go
-│   └── hash_test.go
+│   ├── hash_test.go
+│   ├── merkle.go
+│   └── merkle_test.go
 │
 ├── blockchain/
+│   ├── blockchain.go
 │   ├── balance.go
 │   ├── balance_validation.go
-│   ├── blockchain.go
-│   ├── double_spend_test.go
 │   ├── mining.go
-│   ├── mining_test.go
-│   ├── print.go
+│   ├── concurrent.go
+│   ├── difficulty.go
+│   ├── fork.go
+│   ├── validate.go
 │   ├── storage.go
+│   ├── print.go
+│   ├── test_helpers.go
+│   │
+│   ├── mining_test.go
+│   ├── concurrent_mining_test.go
+│   ├── difficulty_test.go
+│   ├── fork_test.go
+│   ├── double_spend_test.go
+│   ├── signature_test.go
 │   ├── storage_test.go
 │   ├── tamper_test.go
-│   ├── validate.go
 │   └── validate_test.go
 │
-└── ledger/
-    ├── ledger.go
-    ├── ledger_test.go
-    └── transaction.go
-```
-
----
+├── ledger/
+│   ├── ledger.go
+│   ├── transaction.go
+│   └── ledger_test.go
+│
+└── wallet/
+    ├── wallet.go
+    ├── storage.go
+    ├── store.go
+    ├── signature.go
+    ├── verify.go
+    ├── transaction.go
+    ├── transaction_verify.go
+    └── signature_test.go
 
 ## Requirements
 
@@ -297,12 +334,15 @@ Implementation details:
 1. A user creates a transaction.
 2. The transaction is stored in the pending transaction pool.
 3. Pending transactions are validated before mining.
-4. A new block is created with valid transactions.
-5. Proof of Work searches for a valid nonce.
-6. The block is added to the blockchain.
-7. Blockchain data is stored in `chain.json`.
-8. When restarting, blockchain data is loaded and validated.
-9. Account balances are calculated from blockchain history.
+4. Transactions are verified including digital signatures.
+5. A Merkle root is calculated from block transactions.
+6. A new block is created containing the Merkle root and difficulty.
+7. Proof of Work searches for a valid nonce.
+8. The mined block is added to the blockchain.
+9. Difficulty is adjusted automatically based on mining speed.
+10. Blockchain data is stored in chain.json.
+11. When restarting, blockchain data is loaded and validated.
+12. Competing chains can be resolved using the longest valid chain rule.
 
 ---
 
@@ -357,12 +397,11 @@ ok      toy-blockchain/ledger
 This project is created for educational purposes and does not include:
 
 - Peer-to-peer networking
-- Digital signatures
-- Wallet management
-- Distributed consensus
-- Multiple blockchain nodes
+- Multiple blockchain nodes communicating over a network
+- Production-level cryptographic key storage
 - Smart contracts
-- Merkle trees
+- Real distributed consensus mechanisms
+
 
 ---
 
@@ -370,13 +409,13 @@ This project is created for educational purposes and does not include:
 
 Possible improvements:
 
-- Digital wallet implementation
-- Cryptographic signatures
+- Peer-to-peer blockchain networking
 - REST API support
 - Web interface
 - Multiple blockchain nodes
-- Adaptive mining difficulty
-- Merkle tree implementation
+- Production-level wallet security
+- Smart contract support
+- Advanced consensus mechanisms
 
 ---
 
