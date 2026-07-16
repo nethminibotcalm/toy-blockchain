@@ -10,12 +10,7 @@ import (
 
 func hashTransaction(tx ledger.Transaction) string {
 
-	data := fmt.Sprintf(
-		"%s%s%d",
-		tx.Sender,
-		tx.Receiver,
-		tx.Amount,
-	)
+	data := fmt.Sprintf("%s:%s:%d", tx.Sender, tx.Receiver, tx.Amount)
 
 	hash := sha256.Sum256([]byte(data))
 

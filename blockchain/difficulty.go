@@ -24,7 +24,6 @@ func (bc *Blockchain) AdjustDifficulty() {
 		int64(AdjustmentInterval) *
 			TargetBlockTime
 
-		
 		// Blocks are mined too quickly
 	if actualTime < expectedTime/2 {
 
