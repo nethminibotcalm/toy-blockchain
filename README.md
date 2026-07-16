@@ -205,8 +205,10 @@ During mining:
 Example output:
 
 ```
-Mining attempts: 1619
-Mining time: 5.462ms
+Starting concurrent mining with 4 workers
+Worker <id> found nonce: <nonce>
+Mining attempts: <number>
+Mining time: <duration>
 Mining completed
 ```
 
@@ -288,7 +290,6 @@ The blockchain supports concurrent Proof of Work mining using Go goroutines.
 
 Implementation details:
 - Multiple workers search different nonce ranges.
-- sync.WaitGroup manages worker completion.
 - context cancellation stops remaining workers after a valid nonce is found.
 - atomic counters track mining attempts.
 - mutex protects shared mining results.
