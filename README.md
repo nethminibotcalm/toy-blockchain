@@ -133,6 +133,9 @@ Implemented tests for:
     ├── transaction.go
     ├── transaction_verify.go
     └── signature_test.go
+```
+
+---
 
 ## Requirements
 
@@ -232,11 +235,13 @@ Example output:
 
 ```
 Index: 1
-Transactions: [{Alice Bob 20}]
+Transactions: [{Alice Bob 20 <signature-hex> <public-key-hex>}]
 Nonce: 1618
 Previous Hash: ...
 Hash: 0000....
 ```
+
+(Each transaction also carries its ECDSA signature and the sender's public key, so the real output is longer than shown here.)
 
 ### Validate Blockchain
 
