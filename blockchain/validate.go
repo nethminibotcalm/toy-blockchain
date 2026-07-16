@@ -8,9 +8,24 @@ import (
 )
 
 func (bc *Blockchain) ValidateChain() error {
+	// Check blockchain is not empty
+	if len(bc.Blocks) == 0 {
+		return fmt.Errorf("blockchain is empty")
+	}
 
 	// Check genesis block
 	genesis := bc.Blocks[0]
+
+	// Genesis block must have fixed properties
+	if genesis.Index != 0 {
+		return fmt.Errorf("invalid genesis index")
+	}
+
+	expectedPreviousHash := "0000000000000000000000000000000000000000000000000000000000000000"
+
+	if genesis.PreviousHash != expectedPreviousHash {
+		return fmt.Errorf("invalid genesis previous hash")
+	}
 
 	// Validate genesis Merkle root
 	calculatedRoot := block.CalculateMerkleRoot(genesis.Transactions)

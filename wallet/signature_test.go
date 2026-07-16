@@ -25,13 +25,11 @@ func TestSignatureManyRounds(t *testing.T) {
 			t.Fatal(err)
 		}
 
-
 		valid := Verify(
 			data,
 			signature,
 			w.GetPublicKey(),
 		)
-
 
 		if !valid {
 			t.Fatalf(

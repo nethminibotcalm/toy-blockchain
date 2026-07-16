@@ -12,6 +12,14 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 	if len(candidate) <= len(bc.Blocks) {
 		return fmt.Errorf("candidate chain is not longer")
 	}
+	// Candidate must share the same genesis block
+	if len(candidate) == 0 || len(bc.Blocks) == 0 {
+		return fmt.Errorf("empty blockchain")
+	}
+
+	if candidate[0].Hash != bc.Blocks[0].Hash {
+		return fmt.Errorf("candidate chain has different genesis block")
+	}
 
 	// Create temporary blockchain for validation
 	temp := Blockchain{

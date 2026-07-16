@@ -1,5 +1,7 @@
 package blockchain
 
+const MaxDifficulty = 6
+
 func (bc *Blockchain) AdjustDifficulty() {
 
 	// Not enough blocks to adjust
@@ -22,10 +24,13 @@ func (bc *Blockchain) AdjustDifficulty() {
 		int64(AdjustmentInterval) *
 			TargetBlockTime
 
-	// Blocks are mined too quickly
+		// Blocks are mined too quickly
+		// Blocks are mined too quickly
 	if actualTime < expectedTime/2 {
 
-		bc.Difficulty++
+		if bc.Difficulty < MaxDifficulty {
+			bc.Difficulty++
+		}
 
 		return
 	}

@@ -266,6 +266,7 @@ Validation checks:
 - Timestamp order
 - Proof of Work difficulty
 - Transaction balance validity
+- Merkle root correctness
 
 ### View Balances
 
@@ -402,7 +403,7 @@ This project is created for educational purposes and does not include:
 - Production-level cryptographic key storage
 - Smart contracts
 - Real distributed consensus mechanisms
-
+- Fork resolution is currently available through the blockchain package API and automated tests rather than a direct CLI command.
 
 ---
 
