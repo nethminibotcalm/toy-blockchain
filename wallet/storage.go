@@ -48,6 +48,7 @@ func LoadWallet(name string) (*Wallet, error) {
 	path := filepath.Join("wallets", name+".json")
 
 	bytes, err := os.ReadFile(path)
+
 	if err != nil {
 		return nil, err
 	}
@@ -55,26 +56,33 @@ func LoadWallet(name string) (*Wallet, error) {
 	var data walletFile
 
 	err = json.Unmarshal(bytes, &data)
+
 	if err != nil {
 		return nil, err
 	}
 
 	privateBytes, err := hex.DecodeString(data.PrivateKey)
+
 	if err != nil {
 		return nil, err
 	}
 
 	privateKey, err := x509.ParseECPrivateKey(privateBytes)
+
 	if err != nil {
 		return nil, err
 	}
 
-	publicKey := append(
-		privateKey.PublicKey.X.Bytes(),
-		privateKey.PublicKey.Y.Bytes()...,
-	)
-
 	privateKey.PublicKey.Curve = elliptic.P256()
+
+	// Recreate fixed-size public key
+	xBytes := make([]byte, 32)
+	yBytes := make([]byte, 32)
+
+	privateKey.PublicKey.X.FillBytes(xBytes)
+	privateKey.PublicKey.Y.FillBytes(yBytes)
+
+	publicKey := append(xBytes, yBytes...)
 
 	return &Wallet{
 		PrivateKey: privateKey,

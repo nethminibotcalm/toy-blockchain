@@ -50,7 +50,6 @@ func main() {
 			Receiver: os.Args[3],
 			Amount:   amount,
 		}
-		
 
 		senderWallet, exists := wallet.GetWallet(tx.Sender)
 
@@ -85,25 +84,25 @@ func main() {
 
 		fmt.Println("Transaction added")
 
-case "mine":
+	case "mine":
 
-	currentBalances := blockchain.CalculateBalances(
-		bc.Blocks,
-		bc.InitialBalances,
-	)
+		currentBalances := blockchain.CalculateBalances(
+			bc.Blocks,
+			bc.InitialBalances,
+		)
 
-	l := ledger.NewLedger(currentBalances)
+		l := ledger.NewLedger(currentBalances)
 
-	bc.MinePendingTransactions(l)
+		bc.MinePendingTransactions(l)
 
-	err = bc.SaveToFile("chain.json")
+		err = bc.SaveToFile("chain.json")
 
-	if err != nil {
-		fmt.Println("Save failed:", err)
-		return
-	}
+		if err != nil {
+			fmt.Println("Save failed:", err)
+			return
+		}
 
-	fmt.Println("Mining completed")
+		fmt.Println("Mining completed")
 
 	case "print":
 

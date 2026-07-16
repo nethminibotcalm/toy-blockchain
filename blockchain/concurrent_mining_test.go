@@ -12,7 +12,7 @@ func TestConcurrentMining(t *testing.T) {
 		Index:        1,
 		Timestamp:    1,
 		PreviousHash: "abc",
-		Difficulty: 4,
+		Difficulty:   4,
 	}
 
 	attempts, _ := MineBlockConcurrent(&b, 3, 4)

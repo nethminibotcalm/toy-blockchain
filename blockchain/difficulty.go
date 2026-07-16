@@ -7,25 +7,20 @@ func (bc *Blockchain) AdjustDifficulty() {
 		return
 	}
 
-
 	latestBlock := bc.Blocks[len(bc.Blocks)-1]
 
 	previousAdjustmentBlock :=
 		bc.Blocks[len(bc.Blocks)-AdjustmentInterval]
 
-
 	// Actual time taken for recent blocks
 	actualTime :=
 		latestBlock.Timestamp -
-		previousAdjustmentBlock.Timestamp
-
+			previousAdjustmentBlock.Timestamp
 
 	// Expected time
 	expectedTime :=
 		int64(AdjustmentInterval) *
-		TargetBlockTime
-
-
+			TargetBlockTime
 
 	// Blocks are mined too quickly
 	if actualTime < expectedTime/2 {
@@ -34,8 +29,6 @@ func (bc *Blockchain) AdjustDifficulty() {
 
 		return
 	}
-
-
 
 	// Blocks are mined too slowly
 	if actualTime > expectedTime*2 {

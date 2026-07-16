@@ -21,10 +21,13 @@ func Sign(data string, privateKey *ecdsa.PrivateKey) (string, error) {
 		return "", err
 	}
 
-	signature := append(
-		r.Bytes(),
-		s.Bytes()...,
-	)
+	rBytes := make([]byte, 32)
+	sBytes := make([]byte, 32)
+
+	r.FillBytes(rBytes)
+	s.FillBytes(sBytes)
+
+	signature := append(rBytes, sBytes...)
 
 	return hex.EncodeToString(signature), nil
 }

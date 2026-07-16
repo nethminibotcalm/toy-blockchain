@@ -8,7 +8,6 @@ import (
 	"toy-blockchain/ledger"
 )
 
-
 func hashTransaction(tx ledger.Transaction) string {
 
 	data := fmt.Sprintf(
@@ -23,7 +22,6 @@ func hashTransaction(tx ledger.Transaction) string {
 	return hex.EncodeToString(hash[:])
 }
 
-
 func CalculateMerkleRoot(
 	transactions []ledger.Transaction,
 ) string {
@@ -32,9 +30,7 @@ func CalculateMerkleRoot(
 		return ""
 	}
 
-
 	var hashes []string
-
 
 	// Hash every transaction
 	for _, tx := range transactions {
@@ -45,33 +41,24 @@ func CalculateMerkleRoot(
 		)
 	}
 
-
 	// Build tree
 	for len(hashes) > 1 {
 
-
 		var newLevel []string
-
 
 		for i := 0; i < len(hashes); i += 2 {
 
-
 			left := hashes[i]
 
-
 			right := left
-
 
 			if i+1 < len(hashes) {
 				right = hashes[i+1]
 			}
 
-
 			data := left + right
 
-
 			hash := sha256.Sum256([]byte(data))
-
 
 			newLevel = append(
 				newLevel,
@@ -80,10 +67,8 @@ func CalculateMerkleRoot(
 
 		}
 
-
 		hashes = newLevel
 	}
-
 
 	return hashes[0]
 }

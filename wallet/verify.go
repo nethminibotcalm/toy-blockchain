@@ -26,9 +26,13 @@ func Verify(
 		return false
 	}
 
-	// Split public key
-	x := new(big.Int).SetBytes(pubBytes[:len(pubBytes)/2])
-	y := new(big.Int).SetBytes(pubBytes[len(pubBytes)/2:])
+	// P-256 coordinates are always 32 bytes
+	if len(pubBytes) != 64 {
+		return false
+	}
+
+	x := new(big.Int).SetBytes(pubBytes[:32])
+	y := new(big.Int).SetBytes(pubBytes[32:])
 
 	pub := ecdsa.PublicKey{
 		Curve: elliptic.P256(),
@@ -36,9 +40,13 @@ func Verify(
 		Y:     y,
 	}
 
-	// Split signature
-	r := new(big.Int).SetBytes(sigBytes[:len(sigBytes)/2])
-	s := new(big.Int).SetBytes(sigBytes[len(sigBytes)/2:])
+	// r and s are also 32 bytes each
+	if len(sigBytes) != 64 {
+		return false
+	}
+
+	r := new(big.Int).SetBytes(sigBytes[:32])
+	s := new(big.Int).SetBytes(sigBytes[32:])
 
 	hash := sha256.Sum256([]byte(data))
 

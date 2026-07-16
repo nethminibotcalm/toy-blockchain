@@ -14,7 +14,6 @@ func TestDoubleSpendPrevention(t *testing.T) {
 
 	l := ledger.NewLedger(balances)
 
-
 	tx1 := createSignedTransaction(
 		t,
 		"Alice",
@@ -29,15 +28,12 @@ func TestDoubleSpendPrevention(t *testing.T) {
 		80,
 	)
 
-
 	bc.AddTransaction(tx1)
 	bc.AddTransaction(tx2)
 
 	bc.MinePendingTransactions(l)
 
-
 	minedBlock := bc.Blocks[len(bc.Blocks)-1]
-
 
 	if len(minedBlock.Transactions) != 1 {
 		t.Fatalf(

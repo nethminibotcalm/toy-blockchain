@@ -12,7 +12,6 @@ type Wallet struct {
 	PublicKey  []byte
 }
 
-// Create a new wallet
 func NewWallet() (*Wallet, error) {
 
 	privateKey, err := ecdsa.GenerateKey(
@@ -24,10 +23,13 @@ func NewWallet() (*Wallet, error) {
 		return nil, err
 	}
 
-	publicKey := append(
-		privateKey.PublicKey.X.Bytes(),
-		privateKey.PublicKey.Y.Bytes()...,
-	)
+	xBytes := make([]byte, 32)
+	yBytes := make([]byte, 32)
+
+	privateKey.PublicKey.X.FillBytes(xBytes)
+	privateKey.PublicKey.Y.FillBytes(yBytes)
+
+	publicKey := append(xBytes, yBytes...)
 
 	return &Wallet{
 		PrivateKey: privateKey,
@@ -35,7 +37,6 @@ func NewWallet() (*Wallet, error) {
 	}, nil
 }
 
-// Return public key as string
 func (w *Wallet) GetPublicKey() string {
 
 	return hex.EncodeToString(w.PublicKey)

@@ -1,30 +1,43 @@
 package wallet
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestSignatureWorks(t *testing.T) {
+func TestSignatureManyRounds(t *testing.T) {
 
-	w, err := NewWallet()
+	for i := 0; i < 3000; i++ {
 
-	if err != nil {
-		t.Fatal(err)
-	}
+		w, err := NewWallet()
 
-	data := "Alice:Bob:20"
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	signature, err := Sign(data, w.PrivateKey)
+		data := "Alice:Bob:20"
 
-	if err != nil {
-		t.Fatal(err)
-	}
+		signature, err := Sign(
+			data,
+			w.PrivateKey,
+		)
 
-	valid := Verify(
-		data,
-		signature,
-		w.GetPublicKey(),
-	)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	if !valid {
-		t.Fatal("signature verification failed")
+
+		valid := Verify(
+			data,
+			signature,
+			w.GetPublicKey(),
+		)
+
+
+		if !valid {
+			t.Fatalf(
+				"signature verification failed at iteration %d",
+				i,
+			)
+		}
 	}
 }

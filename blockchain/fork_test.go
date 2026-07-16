@@ -4,16 +4,15 @@ import (
 	"testing"
 	"toy-blockchain/block"
 )
+
 func TestResolveForkAcceptsLongerValidChain(t *testing.T) {
 
 	bc := NewBlockchain()
-
 
 	candidate := append(
 		[]block.Block{},
 		bc.Blocks...,
 	)
-
 
 	// create a longer valid chain
 	for i := 1; i <= 2; i++ {
@@ -25,24 +24,19 @@ func TestResolveForkAcceptsLongerValidChain(t *testing.T) {
 			Difficulty:   bc.Difficulty,
 		}
 
-
 		MineBlock(
 			&newBlock,
 			newBlock.Difficulty,
 		)
 
-
 		candidate = append(candidate, newBlock)
 	}
 
-
 	err := bc.ResolveFork(candidate)
-
 
 	if err != nil {
 		t.Fatalf("expected fork to be accepted: %v", err)
 	}
-
 
 	if len(bc.Blocks) != len(candidate) {
 
@@ -53,12 +47,9 @@ func TestResolveForkRejectsShorterChain(t *testing.T) {
 
 	bc := NewBlockchain()
 
-
 	shorter := bc.Blocks
 
-
 	err := bc.ResolveFork(shorter)
-
 
 	if err == nil {
 
@@ -72,12 +63,10 @@ func TestResolveForkRejectsInvalidChain(t *testing.T) {
 
 	bc := NewBlockchain()
 
-
 	candidate := append(
 		[]block.Block{},
 		bc.Blocks...,
 	)
-
 
 	fake := block.Block{
 		Index:        1,
@@ -86,12 +75,9 @@ func TestResolveForkRejectsInvalidChain(t *testing.T) {
 		Difficulty:   bc.Difficulty,
 	}
 
-
 	candidate = append(candidate, fake)
 
-
 	err := bc.ResolveFork(candidate)
-
 
 	if err == nil {
 

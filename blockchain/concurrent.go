@@ -11,9 +11,9 @@ func (bc *Blockchain) MineBlockConcurrent() (block.Block, error) {
 		Timestamp:    int64(len(bc.Blocks)),
 		Transactions: bc.PendingTransactions,
 		PreviousHash: bc.Blocks[len(bc.Blocks)-1].Hash,
-		Difficulty: bc.Difficulty,
+		Difficulty:   bc.Difficulty,
 	}
-	
+
 	_, _ = MineBlockConcurrent(
 		&newBlock,
 		bc.Difficulty,

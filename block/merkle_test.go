@@ -1,6 +1,5 @@
 package block_test
 
-
 import (
 	"testing"
 
@@ -8,31 +7,26 @@ import (
 	"toy-blockchain/ledger"
 )
 
-
-func TestMerkleRoot(t *testing.T){
-
+func TestMerkleRoot(t *testing.T) {
 
 	transactions := []ledger.Transaction{
 
 		{
-			Sender:"Alice",
-			Receiver:"Bob",
-			Amount:10,
+			Sender:   "Alice",
+			Receiver: "Bob",
+			Amount:   10,
 		},
 
 		{
-			Sender:"Bob",
-			Receiver:"Charlie",
-			Amount:5,
+			Sender:   "Bob",
+			Receiver: "Charlie",
+			Amount:   5,
 		},
-
 	}
-
 
 	root := block.CalculateMerkleRoot(
 		transactions,
 	)
-
 
 	if root == "" {
 
@@ -41,7 +35,6 @@ func TestMerkleRoot(t *testing.T){
 		)
 
 	}
-
 
 	t.Log(
 		"Merkle Root:",

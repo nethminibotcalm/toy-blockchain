@@ -13,7 +13,6 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 		return fmt.Errorf("candidate chain is not longer")
 	}
 
-
 	// Create temporary blockchain for validation
 	temp := Blockchain{
 		Blocks:              candidate,
@@ -22,16 +21,13 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 		Difficulty:          bc.Difficulty,
 	}
 
-
 	// Validate candidate chain
 	if err := temp.ValidateChain(); err != nil {
 		return fmt.Errorf("invalid candidate chain: %v", err)
 	}
 
-
 	// Accept candidate chain
 	bc.Blocks = candidate
-
 
 	return nil
 }
