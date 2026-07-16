@@ -85,25 +85,25 @@ func main() {
 
 		fmt.Println("Transaction added")
 
-	case "mine":
+case "mine":
 
-		minedBlock, err := bc.MineBlockConcurrent()
+	currentBalances := blockchain.CalculateBalances(
+		bc.Blocks,
+		bc.InitialBalances,
+	)
 
-		if err != nil {
-			fmt.Println("Mining failed:", err)
-			return
-		}
+	l := ledger.NewLedger(currentBalances)
 
-		bc.Blocks = append(bc.Blocks, minedBlock)
+	bc.MinePendingTransactions(l)
 
-		err = bc.SaveToFile("chain.json")
+	err = bc.SaveToFile("chain.json")
 
-		if err != nil {
-			fmt.Println("Save failed:", err)
-			return
-		}
+	if err != nil {
+		fmt.Println("Save failed:", err)
+		return
+	}
 
-		fmt.Println("Mining completed")
+	fmt.Println("Mining completed")
 
 	case "print":
 

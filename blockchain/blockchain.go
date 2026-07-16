@@ -14,9 +14,10 @@ type Blockchain struct {
 	PendingTransactions []ledger.Transaction
 	Difficulty          int
 }
+
 const (
-	TargetBlockTime      int64 = 10
-	AdjustmentInterval         = 5
+	TargetBlockTime    int64 = 10
+	AdjustmentInterval       = 5
 )
 
 func CreateGenesisBlock() block.Block {
@@ -26,15 +27,15 @@ func CreateGenesisBlock() block.Block {
 		Transactions: []ledger.Transaction{},
 		PreviousHash: "0000000000000000000000000000000000000000000000000000000000000000",
 		Nonce:        0,
-		MerkleRoot: "",
-		Difficulty: 4,
+		MerkleRoot:   "",
+		Difficulty:   4,
 	}
 	// Calculate and assign the hash.
 	genesis.Hash = block.CalculateHash(genesis)
 	return genesis
 }
 func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
-	
+
 	lastBlock := bc.Blocks[len(bc.Blocks)-1]
 
 	newBlock := block.Block{
@@ -43,12 +44,15 @@ func (bc *Blockchain) AddBlock(transactions []ledger.Transaction) {
 		Transactions: transactions,
 		PreviousHash: lastBlock.Hash,
 		Nonce:        0,
-		MerkleRoot:
-		block.CalculateMerkleRoot(transactions),
-		Difficulty: bc.Difficulty,
+		MerkleRoot:   block.CalculateMerkleRoot(transactions),
+		Difficulty:   bc.Difficulty,
 	}
 
-	attempts, duration := MineBlock(&newBlock, bc.Difficulty)
+	attempts, duration := MineBlockConcurrent(
+		&newBlock,
+		bc.Difficulty,
+		4,
+	)
 
 	fmt.Println("Mining attempts:", attempts)
 	fmt.Println("Mining time:", duration)
@@ -67,7 +71,6 @@ func NewBlockchain() *Blockchain {
 			"Alice":   100,
 			"Bob":     100,
 			"Charlie": 100,
-			
 		},
 		PendingTransactions: []ledger.Transaction{},
 		Difficulty:          4,
@@ -112,8 +115,8 @@ func (bc *Blockchain) MinePendingTransactions(l *ledger.Ledger) {
 }
 func (bc *Blockchain) AddTransaction(t ledger.Transaction) bool {
 	if !wallet.VerifyTransaction(t) {
-    return false
-}
+		return false
+	}
 	balances := CalculateBalances(bc.Blocks, bc.InitialBalances)
 	tempLedger := ledger.NewLedger(balances)
 
