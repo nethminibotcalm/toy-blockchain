@@ -15,12 +15,14 @@ func main() {
 	bc, err := blockchain.LoadFromFile("chain.json")
 
 	if err != nil {
-		if _, statErr := os.Stat("chain.json"); statErr == nil {
-			fmt.Println("Warning: chain.json exists but could not be loaded:", err)
-			fmt.Println("Starting a new blockchain instead.")
-		}
-		bc = blockchain.NewBlockchain()
-	}
+
+    if _, statErr := os.Stat("chain.json"); statErr == nil {
+        fmt.Println("Blockchain loading failed:", err)
+        return
+    }
+
+    bc = blockchain.NewBlockchain()
+}
 
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a command")
