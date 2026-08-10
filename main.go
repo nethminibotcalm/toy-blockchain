@@ -7,6 +7,7 @@ import (
 
 	"toy-blockchain/blockchain"
 	"toy-blockchain/ledger"
+	"toy-blockchain/node"
 	"toy-blockchain/wallet"
 )
 
@@ -86,6 +87,21 @@ func main() {
 		}
 
 		fmt.Println("Transaction added")
+		
+	case "node":
+		config, err := node.ParseConfig(os.Args[2:])
+
+		if err != nil {
+			fmt.Println("Invalid node configuration:", err)
+			return
+		}
+		blockchainNode := node.NewNode(config, bc)
+
+		fmt.Println("Node listening on", config.Address)
+		fmt.Println("Known peers:", config.Peers)
+		if err := blockchainNode.Start(); err != nil {
+			fmt.Println("Node server failed:", err)
+		}
 
 	case "mine":
 
@@ -148,5 +164,6 @@ func main() {
 		fmt.Println("  print")
 		fmt.Println("  validate")
 		fmt.Println("  balance")
+		fmt.Println("  node -address <address> -peers <peer1,peer2>")
 	}
 }
