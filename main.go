@@ -16,13 +16,13 @@ func main() {
 
 	if err != nil {
 
-    if _, statErr := os.Stat("chain.json"); statErr == nil {
-        fmt.Println("Blockchain loading failed:", err)
-        return
-    }
+		if _, statErr := os.Stat("chain.json"); statErr == nil {
+			fmt.Println("Blockchain loading failed:", err)
+			return
+		}
 
-    bc = blockchain.NewBlockchain()
-}
+		bc = blockchain.NewBlockchain()
+	}
 
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a command")
@@ -59,6 +59,7 @@ func main() {
 			fmt.Println("Sender wallet not found")
 			return
 		}
+		tx.Nonce = bc.NextNonce(senderWallet.GetAddress())
 
 		signedTx, err := wallet.SignTransaction(
 			tx,
