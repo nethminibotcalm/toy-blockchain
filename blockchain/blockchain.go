@@ -93,12 +93,13 @@ func (bc *Blockchain) MinePendingTransactions(l *ledger.Ledger) {
 	validTransactions := []ledger.Transaction{}
 
 	for _, tx := range bc.PendingTransactions {
+	if wallet.VerifyTransaction(tx) &&
+		tempLedger.ValidateTransaction(tx) {
 
-		if tempLedger.ValidateTransaction(tx) {
-			validTransactions = append(validTransactions, tx)
-			tempLedger.ApplyTransaction(tx)
-		}
+		validTransactions = append(validTransactions, tx)
+		tempLedger.ApplyTransaction(tx)
 	}
+}
 
 	if len(validTransactions) == 0 {
 		bc.PendingTransactions = []ledger.Transaction{}

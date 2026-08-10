@@ -1,25 +1,23 @@
 package wallet
 
-import (
-	"fmt"
-
-	"toy-blockchain/ledger"
-)
+import "toy-blockchain/ledger"
 
 func SignTransaction(
 	tx ledger.Transaction,
 	w *Wallet,
 ) (ledger.Transaction, error) {
 
-	data := fmt.Sprintf(
-		"%s:%s:%d",
-		tx.Sender,
-		tx.Receiver,
-		tx.Amount,
-	)
+	tx.PublicKey = w.GetPublicKey()
+	tx.SenderAddress = w.GetAddress()
+
+	payload, err := TransactionSigningPayload(tx)
+
+	if err != nil {
+		return tx, err
+	}
 
 	signature, err := Sign(
-		data,
+		string(payload),
 		w.PrivateKey,
 	)
 
@@ -27,7 +25,6 @@ func SignTransaction(
 		return tx, err
 	}
 
-	tx.PublicKey = w.GetPublicKey()
 	tx.Signature = signature
 
 	return tx, nil

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"toy-blockchain/block"
+	"toy-blockchain/wallet"
 )
 
 func (bc *Blockchain) ValidateChain() error {
@@ -53,6 +54,16 @@ func (bc *Blockchain) ValidateChain() error {
 
 		current := bc.Blocks[i]
 		previous := bc.Blocks[i-1]
+		// Verify every transaction signature in the current block.
+for txIndex, tx := range current.Transactions {
+	if !wallet.VerifyTransaction(tx) {
+		return fmt.Errorf(
+			"block %d transaction %d: invalid signature",
+			i,
+			txIndex,
+		)
+	}
+}
 
 		// Check Merkle root
 		calculatedRoot := block.CalculateMerkleRoot(current.Transactions)
