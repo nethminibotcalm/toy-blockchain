@@ -1,6 +1,7 @@
 package ledger
 
 type Transaction struct {
+	ID            string
 	Sender        string
 	SenderAddress string
 	Receiver      string

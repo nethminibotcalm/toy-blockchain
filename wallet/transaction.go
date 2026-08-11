@@ -27,5 +27,13 @@ func SignTransaction(
 
 	tx.Signature = signature
 
+	transactionID, err := TransactionID(tx)
+
+	if err != nil {
+		return tx, err
+	}
+
+	tx.ID = transactionID
+
 	return tx, nil
 }

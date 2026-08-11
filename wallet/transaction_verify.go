@@ -19,7 +19,15 @@ func VerifyTransaction(tx ledger.Transaction) bool {
 	if tx.SenderAddress != expectedAddress {
 		return false
 	}
+	expectedID, err := TransactionID(tx)
 
+	if err != nil {
+		return false
+	}
+
+	if tx.ID != expectedID {
+		return false
+	}
 	payload, err := TransactionSigningPayload(tx)
 	if err != nil {
 		return false
