@@ -9,6 +9,7 @@ func (n *Node) Handler() http.Handler {
 	mux.HandleFunc("/mempool", n.handleMempool)
 	mux.HandleFunc("/balances", n.handleBalances)
 	mux.HandleFunc("/chain", n.handleChain)
+	mux.HandleFunc("/transactions", n.handleTransaction)
 	return mux
 }
 func (n *Node) Start() error {
