@@ -5,6 +5,10 @@ import "net/http"
 func (n *Node) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/status", n.handleStatus)
+	mux.HandleFunc("/peers", n.handlePeers)
+	mux.HandleFunc("/mempool", n.handleMempool)
+	mux.HandleFunc("/balances", n.handleBalances)
+	mux.HandleFunc("/chain", n.handleChain)
 	return mux
 }
 func (n *Node) Start() error {
