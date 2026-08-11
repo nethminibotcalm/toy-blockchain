@@ -1,0 +1,90 @@
+package node
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"toy-blockchain/block"
+)
+
+type BlockResponse struct {
+	Accepted  bool   `json:"accepted"`
+	Duplicate bool   `json:"duplicate"`
+	Message   string `json:"message"`
+}
+
+func (n *Node) handleBlock(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	if r.Method != http.MethodPost {
+		http.Error(
+			w,
+			"method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+		return
+	}
+	sourcePeer := r.Header.Get("X-Node-Address")
+	var receivedBlock block.Block
+
+	if err := json.NewDecoder(r.Body).Decode(
+		&receivedBlock,
+	); err != nil {
+		http.Error(
+			w,
+			"invalid block JSON",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	n.mu.Lock()
+
+	if n.seenBlocks[receivedBlock.Hash] {
+		n.mu.Unlock()
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(BlockResponse{
+			Accepted:  false,
+			Duplicate: true,
+			Message:   "block already known",
+		})
+		return
+	}
+
+	if err := n.Blockchain.AddReceivedBlock(
+		receivedBlock,
+	); err != nil {
+		n.mu.Unlock()
+
+		http.Error(
+			w,
+			"invalid block: "+err.Error(),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	n.seenBlocks[receivedBlock.Hash] = true
+
+	for _, tx := range receivedBlock.Transactions {
+		if tx.ID != "" {
+			n.seenTransactions[tx.ID] = true
+		}
+	}
+
+	n.mu.Unlock()
+
+	n.forwardBlock(receivedBlock, sourcePeer)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+
+	json.NewEncoder(w).Encode(BlockResponse{
+		Accepted:  true,
+		Duplicate: false,
+		Message:   "block accepted",
+	})
+}

@@ -11,6 +11,7 @@ type Node struct {
 	Blockchain       *blockchain.Blockchain
 	mu               sync.RWMutex
 	seenTransactions map[string]bool
+	seenBlocks       map[string]bool
 }
 
 func NewNode(
@@ -18,13 +19,17 @@ func NewNode(
 	chain *blockchain.Blockchain,
 ) *Node {
 	seenTransactions := make(map[string]bool)
-
+	seenBlocks := make(map[string]bool)
 	// Remember transactions already stored in mined blocks.
 	for _, currentBlock := range chain.Blocks {
+		if currentBlock.Hash != "" {
+			seenBlocks[currentBlock.Hash] = true
+		}
 		for _, tx := range currentBlock.Transactions {
 			if tx.ID != "" {
 				seenTransactions[tx.ID] = true
 			}
+
 		}
 	}
 
@@ -39,5 +44,6 @@ func NewNode(
 		Config:           config,
 		Blockchain:       chain,
 		seenTransactions: seenTransactions,
+		seenBlocks:       seenBlocks,
 	}
 }

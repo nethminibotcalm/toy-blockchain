@@ -10,6 +10,8 @@ func (n *Node) Handler() http.Handler {
 	mux.HandleFunc("/balances", n.handleBalances)
 	mux.HandleFunc("/chain", n.handleChain)
 	mux.HandleFunc("/transactions", n.handleTransaction)
+	mux.HandleFunc("/blocks", n.handleBlock)
+	mux.HandleFunc("/mine", n.handleMine)
 	return mux
 }
 func (n *Node) Start() error {
