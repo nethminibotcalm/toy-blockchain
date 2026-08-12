@@ -71,7 +71,12 @@ func (n *Node) forwardTransaction(
 			)
 			continue
 		}
-
+		fmt.Println(
+			"Transaction forwarded:",
+			tx.ID,
+			"to",
+			peer,
+		)
 		response.Body.Close()
 	}
 }

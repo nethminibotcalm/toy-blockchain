@@ -2,8 +2,8 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-
 	"toy-blockchain/ledger"
 )
 
@@ -44,7 +44,10 @@ func (n *Node) handleTransaction(
 	// Already known: unlock, respond and do not forward.
 	if n.seenTransactions[tx.ID] {
 		n.mu.Unlock()
-
+		fmt.Println(
+			"Duplicate transaction ignored:",
+			tx.ID,
+		)
 		w.Header().Set("Content-Type", "application/json")
 
 		json.NewEncoder(w).Encode(TransactionResponse{
@@ -70,7 +73,10 @@ func (n *Node) handleTransaction(
 	// Valid and new: remember it, then unlock.
 	n.seenTransactions[tx.ID] = true
 	n.mu.Unlock()
-
+	fmt.Println(
+		"Transaction accepted:",
+		tx.ID,
+	)
 	// Forward only the newly accepted transaction.
 	n.forwardTransaction(tx, sourcePeer)
 

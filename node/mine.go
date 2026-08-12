@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"toy-blockchain/block"
@@ -72,6 +73,12 @@ func (n *Node) handleMine(
 	}
 
 	n.mu.Unlock()
+
+	fmt.Println(
+		"Block mined:",
+		newBlock.Index,
+		newBlock.Hash,
+	)
 
 	n.forwardBlock(newBlock, "")
 

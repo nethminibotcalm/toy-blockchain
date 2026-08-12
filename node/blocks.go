@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"toy-blockchain/block"
@@ -21,6 +22,7 @@ func (n *Node) handleBlock(
 		n.handleMissingBlocks(w, r)
 		return
 	}
+
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
@@ -29,7 +31,9 @@ func (n *Node) handleBlock(
 		)
 		return
 	}
+
 	sourcePeer := r.Header.Get("X-Node-Address")
+
 	var receivedBlock block.Block
 
 	if err := json.NewDecoder(r.Body).Decode(
@@ -47,6 +51,11 @@ func (n *Node) handleBlock(
 
 	if n.seenBlocks[receivedBlock.Hash] {
 		n.mu.Unlock()
+
+		fmt.Println(
+			"Duplicate block ignored:",
+			receivedBlock.Hash,
+		)
 
 		w.Header().Set("Content-Type", "application/json")
 
@@ -80,6 +89,12 @@ func (n *Node) handleBlock(
 	}
 
 	n.mu.Unlock()
+
+	fmt.Println(
+		"Block accepted:",
+		receivedBlock.Index,
+		receivedBlock.Hash,
+	)
 
 	n.forwardBlock(receivedBlock, sourcePeer)
 

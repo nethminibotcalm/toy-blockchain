@@ -76,6 +76,14 @@ func (n *Node) forwardBlock(
 			continue
 		}
 
+		fmt.Println(
+			"Block forwarded:",
+			newBlock.Index,
+			newBlock.Hash,
+			"to",
+			peer,
+		)
+
 		response.Body.Close()
 	}
 }

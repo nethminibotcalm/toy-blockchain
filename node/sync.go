@@ -13,6 +13,11 @@ func (n *Node) SyncFromPeer(peer string) error {
 		)
 	}
 
+	fmt.Println(
+		"Synchronization started with:",
+		peer,
+	)
+
 	// Safely read the local chain status.
 	n.mu.RLock()
 	localHeight := len(n.Blockchain.Blocks) - 1
@@ -22,6 +27,11 @@ func (n *Node) SyncFromPeer(peer string) error {
 	// Both nodes already have the same chain head.
 	if status.Height == localHeight &&
 		status.HeadHash == localHeadHash {
+
+		fmt.Println(
+			"Already synchronized with:",
+			peer,
+		)
 
 		return nil
 	}
@@ -45,6 +55,13 @@ func (n *Node) SyncFromPeer(peer string) error {
 			err,
 		)
 	}
+
+	fmt.Println(
+		"Missing blocks downloaded:",
+		len(missingBlocks),
+		"from",
+		peer,
+	)
 
 	// Validate and append the missing blocks in order.
 	for _, missingBlock := range missingBlocks {
@@ -86,6 +103,13 @@ func (n *Node) SyncFromPeer(peer string) error {
 		)
 	}
 
+	fmt.Println(
+		"Synchronization completed with:",
+		peer,
+		"at height",
+		finalHeight,
+	)
+
 	return nil
 }
 
@@ -94,6 +118,11 @@ func (n *Node) SyncFromPeer(peer string) error {
 func (n *Node) resolveForkFromPeer(
 	peer string,
 ) error {
+	fmt.Println(
+		"Competing chain detected from:",
+		peer,
+	)
+
 	candidate, err := fetchPeerChain(peer)
 
 	if err != nil {
@@ -114,6 +143,11 @@ func (n *Node) resolveForkFromPeer(
 	}
 
 	n.rebuildSeenState()
+
+	fmt.Println(
+		"Stronger chain adopted from:",
+		peer,
+	)
 
 	return nil
 }
@@ -142,6 +176,7 @@ func (n *Node) rebuildSeenState() {
 		}
 	}
 }
+
 func (n *Node) SyncWithPeers() error {
 	var lastError error
 

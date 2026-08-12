@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"fmt"
+
 	"toy-blockchain/block"
 	"toy-blockchain/ledger"
 )
@@ -12,12 +13,10 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 		candidate...,
 	)
 
-	// Candidate chain must be longer
-
-	// Candidate must share the same genesis block
 	if len(candidateCopy) == 0 || len(bc.Blocks) == 0 {
 		return fmt.Errorf("empty blockchain")
 	}
+
 	localWork := CalculateChainWork(bc.Blocks)
 	candidateWork := CalculateChainWork(candidateCopy)
 
@@ -28,10 +27,12 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 	}
 
 	if candidateCopy[0].Hash != bc.Blocks[0].Hash {
-		return fmt.Errorf("candidate chain has different genesis block")
+		return fmt.Errorf(
+			"candidate chain has different genesis block",
+		)
 	}
 
-	// Create temporary blockchain for validation
+	// Create a temporary blockchain for validation.
 	temp := Blockchain{
 		Blocks:              candidateCopy,
 		InitialBalances:     bc.InitialBalances,
@@ -39,10 +40,13 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 		Difficulty:          bc.Difficulty,
 	}
 
-	// Validate candidate chain
 	if err := temp.ValidateChain(); err != nil {
-		return fmt.Errorf("invalid candidate chain: %v", err)
+		return fmt.Errorf(
+			"invalid candidate chain: %v",
+			err,
+		)
 	}
+
 	forkPoint := FindForkPoint(
 		bc.Blocks,
 		candidateCopy,
@@ -64,19 +68,23 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 		confirmedIDs,
 	)
 
-	// Accept candidate chain
+	// Accept the stronger candidate chain.
 	bc.Blocks = candidateCopy
+
 	oldPending := append(
 		[]ledger.Transaction(nil),
 		bc.PendingTransactions...,
 	)
 
 	bc.PendingTransactions = []ledger.Transaction{}
+
 	transactionsToReconsider := append(
 		oldPending,
 		orphanedTransactions...,
 	)
+
 	seenPending := make(map[string]bool)
+	recoveredOrphaned := 0
 
 	for _, tx := range transactionsToReconsider {
 		if tx.ID == "" {
@@ -93,8 +101,23 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 
 		if bc.AddTransaction(tx) {
 			seenPending[tx.ID] = true
+
+			for _, orphanedTx := range orphanedTransactions {
+				if orphanedTx.ID == tx.ID {
+					recoveredOrphaned++
+					break
+				}
+			}
 		}
 	}
+
+	fmt.Println(
+		"Chain reorganization completed:",
+		"fork point",
+		forkPoint,
+		"orphaned transactions returned",
+		recoveredOrphaned,
+	)
 
 	return nil
 }
