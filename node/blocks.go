@@ -17,6 +17,10 @@ func (n *Node) handleBlock(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	if r.Method == http.MethodGet {
+		n.handleMissingBlocks(w, r)
+		return
+	}
 	if r.Method != http.MethodPost {
 		http.Error(
 			w,
