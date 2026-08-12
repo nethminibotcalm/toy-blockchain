@@ -38,6 +38,17 @@ func missingBlocksURL(
 
 	return peer + "/blocks?from=" + fromText
 }
+func chainURL(peer string) string {
+	peer = strings.TrimRight(peer, "/")
+
+	if !strings.HasPrefix(peer, "http://") &&
+		!strings.HasPrefix(peer, "https://") {
+
+		peer = "http://" + peer
+	}
+
+	return peer + "/chain"
+}
 func fetchPeerStatus(
 	peer string,
 ) (StatusResponse, error) {
@@ -102,4 +113,36 @@ func fetchMissingBlocks(
 	}
 
 	return missingResponse.Blocks, nil
+}
+func fetchPeerChain(
+	peer string,
+) ([]block.Block, error) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	response, err := client.Get(chainURL(peer))
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"peer returned status %d",
+			response.StatusCode,
+		)
+	}
+
+	var chainResponse ChainResponse
+
+	if err := json.NewDecoder(response.Body).Decode(
+		&chainResponse,
+	); err != nil {
+		return nil, err
+	}
+
+	return chainResponse.Blocks, nil
 }

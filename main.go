@@ -87,7 +87,7 @@ func main() {
 		}
 
 		fmt.Println("Transaction added")
-		
+
 	case "node":
 		config, err := node.ParseConfig(os.Args[2:])
 
@@ -96,7 +96,12 @@ func main() {
 			return
 		}
 		blockchainNode := node.NewNode(config, bc)
-
+		if err := blockchainNode.SyncWithPeers(); err != nil {
+			fmt.Println(
+				"Initial synchronization failed:",
+				err,
+			)
+		}
 		fmt.Println("Node listening on", config.Address)
 		fmt.Println("Known peers:", config.Peers)
 		if err := blockchainNode.Start(); err != nil {
