@@ -196,29 +196,41 @@ Blocks that do not extend the current head trigger synchronization or fork-resol
 
 ### 5.3 Gossip message cost
 
-The final experiment used three fully connected nodes. Each node knew the other two peers.
+The gossip-cost experiment used three fully connected nodes. Each node knew the other two nodes as peers. Before the experiment, all nodes had the same genesis block and an empty pending pool.
 
-For one transaction initially submitted to Node A, the logical propagation was:
+One signed transaction was submitted to Node A:
 
 ```text
-A → B
-A → C
-B or C may forward once to the remaining peer
-A later receives or a peer receives a duplicate
+Transaction ID:
+e9313e9f7687d56d74e635491f0ff5e6313f2151b86829f1242a86c0b747b3ff
 ```
 
-With the configured peer ordering, approximately four transaction POST attempts were produced:
+The logs showed the following propagation:
 
-1. Node A to Node B
-2. Node B to Node C
-3. Node C back toward Node A, where it was detected as duplicate
-4. Node A to Node C, where it was also detected as duplicate
+```text
+Client → Node A: initial submission
+Node A → Node B: accepted
+Node B → Node C: accepted
+Node C → Node A: duplicate ignored
+Node A → Node C: duplicate ignored
+```
 
-The same pattern applies to block gossip.
+The measured message counts were:
 
-Therefore, the full-mesh three-node experiment has a small amount of redundant traffic, but transaction-ID and block-hash de-duplication prevent endless looping and repeated state changes.
+| Measurement                     | Count |
+| ------------------------------- | ----: |
+| Initial client submission       |     1 |
+| Peer-to-peer gossip POSTs       |     4 |
+| Total transaction POST requests |     5 |
+| Nodes accepting the transaction |     3 |
+| Duplicate deliveries detected   |     2 |
 
-For a larger network, a more advanced gossip strategy could randomly select peers, track message origins more completely or use time-to-live values.
+Each node added the transaction exactly once. Although two redundant deliveries occurred, neither duplicate was added or forwarded again.
+
+Every node recalculated the deterministic transaction ID and checked its `seenTransactions` map before adding or forwarding the transaction. Once an ID was already known, the node returned a duplicate response and stopped processing it. This prevented the transaction from circulating endlessly.
+
+The experiment demonstrates that the simple full-mesh approach creates some redundant traffic, but de-duplication bounds the propagation and prevents repeated state changes. A larger network could reduce redundant messages using time-to-live values, randomized peer selection or more complete message-origin tracking.
+
 
 ## 6. Blockchain Synchronization
 
@@ -427,29 +439,80 @@ Local node: Genesis
 
 The local node requested the peer’s height and downloaded Block 1. After validation, both nodes had the same height and head hash.
 
-### 9.4 Fork and reorganization experiment
+### 9.4 Live fork and reorganization experiment
 
-The fork test created:
+Two independent nodes were started without configured peers:
 
 ```text
-Local: Genesis → Local Block 1
-Peer:  Genesis → Peer Block 1 → Peer Block 2
+Node A: localhost:8001
+Node B: localhost:8002
 ```
 
-The local branch contained an Alice-to-Bob transaction. The peer branch contained a different Charlie-to-Bob transaction and more cumulative work.
+Because the nodes were disconnected, a different transaction was submitted and mined on each node:
 
-The local node:
+```text
+Node A Block 1:
+Alice → Bob, amount 20
+Hash: 0000a4c43efe3a796c99787fa7713cee43f8847ac99f79f95cc7270a758d9b22
 
-1. Failed to connect the peer’s later block directly.
-2. Downloaded the complete peer chain.
-3. Validated the candidate.
-4. Found the fork point at genesis.
-5. Adopted the stronger peer chain.
-6. Removed the local block from the selected history.
-7. Recalculated balances.
-8. Returned the still-valid Alice transaction to the pending pool.
+Node B Block 1:
+Charlie → Bob, amount 10
+Hash: 0000fa6a20a3602eacde188774b4b9df9b027bbab6867e5fb094f22b3bbf0dab
+```
 
-Both nodes ended with the same selected chain.
+Both nodes were at height 1, but their different head hashes confirmed that a fork had formed.
+
+Another transaction was then submitted and mined on Node B:
+
+```text
+Charlie → Alice, amount 5
+
+Node B Block 2 hash:
+0000a147dcf5120002ece47b63be19874fa915a09691b17fffe4c97e498db123
+```
+
+The chains were then:
+
+```text
+Node A: Genesis → Block 1A
+Node B: Genesis → Block 1B → Block 2B
+```
+
+Node B therefore had greater cumulative Proof of Work. Its latest block was sent to Node A with Node B’s address in the `X-Node-Address` header, simulating reconnection.
+
+Node A produced the following relevant logs:
+
+```text
+Competing block received; synchronizing with: localhost:8002
+Synchronization started with: localhost:8002
+Missing blocks downloaded: 1 from localhost:8002
+Competing chain detected from: localhost:8002
+Chain reorganization completed: fork point 0 orphaned transactions returned 1
+Stronger chain adopted from: localhost:8002
+```
+
+Node A could not append Block 2B directly because it did not contain Block 1B. It therefore downloaded Node B’s complete chain, validated it, compared cumulative Proof of Work, found the fork point at genesis and adopted Node B’s stronger chain.
+
+Block 1A was orphaned. Its Alice-to-Bob transaction was still valid on the selected chain, so it was returned to Node A’s pending pool:
+
+```text
+Node A mempool size: 1
+```
+
+After reorganization, both nodes reported height 2 and the same head hash:
+
+```text
+Node A height: 2
+Node B height: 2
+
+Shared head:
+0000a147dcf5120002ece47b63be19874fa915a09691b17fffe4c97e498db123
+
+Head-hash equality check: true
+```
+
+This experiment demonstrated automatic fork detection, synchronization, cumulative-work chain selection, chain reorganization, orphaned-transaction recovery and final network convergence.
+
 
 ### 9.5 Test results
 
@@ -538,8 +601,37 @@ Lock
 ```
 
 Race detection was used to verify the final implementation.
+## 11. Discussion Questions
 
-## 11. Known Limitations
+### 11.1 Why agreement is probabilistic and what a 51 percent attack is
+
+The cumulative Proof-of-Work rule allows independent nodes to select the valid chain containing the most total mining work. Normally, honest miners continue adding blocks to the same chain, causing it to become increasingly difficult for a competing branch to catch up.
+
+However, agreement is probabilistic rather than immediately permanent. Two miners may find different valid blocks at nearly the same time, temporarily creating two branches. Nodes may initially receive and follow different branches. The network converges when one branch accumulates more Proof of Work, but there remains a decreasing probability that a competing branch could later overtake it.
+
+A 51 percent attack occurs when one miner or coordinated group controls most of the network’s total mining power. The attacker could build a private chain faster than the honest network and later publish it as the stronger chain. This could reorganize recent blocks and allow the attacker to reverse their own transactions, enabling double-spending. However, control of mining power does not allow the attacker to forge another user’s Ed25519 signature or spend funds without the corresponding private key.
+
+In this small toy network, a 51 percent attack is easier because there are very few miners. The implementation defends against invalid chains by checking hashes, Proof of Work, transaction signatures, nonces and balances, but it cannot prevent a majority of mining power from producing a stronger valid chain.
+### 11.2 Finality and confirmations
+
+Finality describes the level of certainty that an accepted transaction will remain permanently recorded in the blockchain. Hard finality means that once a transaction is finalized, it cannot later be reversed.
+
+This small Proof-of-Work blockchain does not provide hard finality. A transaction may be included in the current chain but later removed if the network receives and adopts a competing valid chain with greater cumulative Proof of Work. The removed block becomes orphaned, and its transactions may return to the pending pool if they remain valid.
+
+Proof-of-Work networks reduce this risk by waiting for confirmations. A transaction has its first confirmation when it is included in a mined block. Each additional block built on top of that block adds another confirmation. Replacing an older transaction would require rebuilding its block and all the work performed after it.
+
+Therefore, more confirmations make a successful reorganization increasingly unlikely. However, confirmations provide probabilistic confidence rather than an absolute guarantee. In this toy network, the protection is much weaker than in a large real network because there are only a few miners and comparatively little total mining power.
+### 11.3 Signature protection and malicious peers
+
+Ed25519 signatures allow nodes to verify that a transaction was authorized by the holder of the corresponding private key. Because the sender address, receiver, amount and transaction nonce are included in the signed payload, changing any of these fields after signing causes verification to fail. Signatures therefore prevent transaction forgery and unauthorized modification.
+
+However, signatures do not prove that a peer is honest. A malicious peer could repeatedly send an old valid transaction in an attempt to process the same payment more than once. The signature would still be valid because the transaction was originally authorized.
+
+The node defends against this replay attempt using transaction nonces and deterministic transaction IDs. The nonce must be the next expected value for the sender, so an already-confirmed transaction has an old nonce and is rejected. The transaction ID and de-duplication map also prevent the same transaction from being repeatedly added or forwarded through the network.
+
+A malicious peer could also send invalid blocks or a fabricated chain. Each node independently verifies the block hash, previous-hash link, Merkle root, required difficulty, Proof of Work, transaction signatures, nonces and resulting balances. A candidate chain is adopted only when it is fully valid and contains more cumulative Proof of Work than the local chain.
+
+## 12. Known Limitations
 
 The implementation is educational and is not suitable for production use.
 
@@ -559,7 +651,7 @@ Limitations include:
 - There is no finality rule or Byzantine-fault-tolerant consensus.
 - The project is designed for a small local trusted network.
 
-## 12. Conclusion
+## 13. Conclusion
 
 The project successfully extended a local blockchain simulator into a networked multi-node blockchain.
 
