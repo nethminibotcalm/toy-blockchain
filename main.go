@@ -87,7 +87,71 @@ func main() {
 		}
 
 		fmt.Println("Transaction added")
+	case "submit":
+		if len(os.Args) < 6 {
+			fmt.Println(
+				"Usage: submit <node-address> <sender> <receiver> <amount>",
+			)
+			return
+		}
 
+		nodeAddress := os.Args[2]
+		sender := os.Args[3]
+		receiver := os.Args[4]
+
+		amount, err := strconv.Atoi(os.Args[5])
+
+		if err != nil {
+			fmt.Println("Invalid amount")
+			return
+		}
+
+		senderWallet, exists := wallet.GetWallet(sender)
+
+		if !exists {
+			fmt.Println("Sender wallet not found")
+			return
+		}
+
+		nonce, err := node.FetchNextNonce(
+			nodeAddress,
+			senderWallet.GetAddress(),
+		)
+
+		if err != nil {
+			fmt.Println("Failed to fetch nonce:", err)
+			return
+		}
+
+		tx := ledger.Transaction{
+			Sender:   sender,
+			Receiver: receiver,
+			Amount:   amount,
+			Nonce:    nonce,
+		}
+
+		signedTx, err := wallet.SignTransaction(
+			tx,
+			senderWallet,
+		)
+
+		if err != nil {
+			fmt.Println("Signing failed:", err)
+			return
+		}
+
+		if err := node.SubmitTransaction(
+			nodeAddress,
+			signedTx,
+		); err != nil {
+			fmt.Println("Submission failed:", err)
+			return
+		}
+
+		fmt.Println(
+			"Transaction submitted to",
+			nodeAddress,
+		)
 	case "node":
 		config, err := node.ParseConfig(os.Args[2:])
 
@@ -170,5 +234,6 @@ func main() {
 		fmt.Println("  validate")
 		fmt.Println("  balance")
 		fmt.Println("  node -address <address> -peers <peer1,peer2>")
+		fmt.Println("  submit <node-address> <sender> <receiver> <amount>")
 	}
 }
