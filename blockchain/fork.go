@@ -69,7 +69,23 @@ func (bc *Blockchain) ResolveFork(candidate []block.Block) error {
 	)
 
 	// Accept the stronger candidate chain.
+	// Calculate the difficulty required for the next block
+	// by replaying difficulty adjustment over the adopted chain.
+	nextDifficulty := candidateCopy[0].Difficulty
+
+	for i := 1; i < len(candidateCopy); i++ {
+		tracker := Blockchain{
+			Blocks:     candidateCopy[:i+1],
+			Difficulty: nextDifficulty,
+		}
+
+		tracker.AdjustDifficulty()
+		nextDifficulty = tracker.Difficulty
+	}
+
+	// Accept the stronger candidate chain and its next difficulty.
 	bc.Blocks = candidateCopy
+	bc.Difficulty = nextDifficulty
 
 	oldPending := append(
 		[]ledger.Transaction(nil),

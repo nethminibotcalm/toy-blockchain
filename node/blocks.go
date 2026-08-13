@@ -72,6 +72,35 @@ func (n *Node) handleBlock(
 	); err != nil {
 		n.mu.Unlock()
 
+		// If the block came from a peer and does not connect to our
+		// current chain, download that peer's chain and resolve the fork.
+		if sourcePeer != "" {
+			fmt.Println(
+				"Competing block received; synchronizing with:",
+				sourcePeer,
+			)
+
+			if syncErr := n.SyncFromPeer(sourcePeer); syncErr != nil {
+				http.Error(
+					w,
+					"block rejected and synchronization failed: "+
+						syncErr.Error(),
+					http.StatusConflict,
+				)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusAccepted)
+
+			json.NewEncoder(w).Encode(BlockResponse{
+				Accepted:  true,
+				Duplicate: false,
+				Message:   "competing chain synchronized",
+			})
+			return
+		}
+
 		http.Error(
 			w,
 			"invalid block: "+err.Error(),

@@ -127,3 +127,118 @@ func TestMineAndGossipBlockBetweenTwoNodes(t *testing.T) {
 		t.Fatal("expected Node B pending pool to be empty")
 	}
 }
+func TestCompetingBlockTriggersAutomaticSynchronization(t *testing.T) {
+	// Create the local chain with one transaction and one mined block.
+	localChain := blockchain.NewBlockchain()
+
+	localTransaction := createNodeSignedTransaction(
+		t,
+		"Alice",
+		"Bob",
+		20,
+		1,
+	)
+
+	if !localChain.AddTransaction(localTransaction) {
+		t.Fatal("expected local transaction to be accepted")
+	}
+
+	localLedger := ledger.NewLedger(
+		blockchain.CalculateBalances(
+			localChain.Blocks,
+			localChain.InitialBalances,
+		),
+	)
+
+	localChain.MinePendingTransactions(localLedger)
+
+	// Create a different and stronger peer chain.
+	peerChain := blockchain.NewBlockchain()
+
+	peerTransaction := createNodeSignedTransaction(
+		t,
+		"Charlie",
+		"Bob",
+		10,
+		1,
+	)
+
+	if !peerChain.AddTransaction(peerTransaction) {
+		t.Fatal("expected peer transaction to be accepted")
+	}
+
+	peerLedger := ledger.NewLedger(
+		blockchain.CalculateBalances(
+			peerChain.Blocks,
+			peerChain.InitialBalances,
+		),
+	)
+
+	peerChain.MinePendingTransactions(peerLedger)
+	peerChain.AddBlock(nil)
+
+	peerNode := NewNode(Config{}, peerChain)
+
+	peerServer := httptest.NewServer(peerNode.Handler())
+	defer peerServer.Close()
+
+	localNode := NewNode(Config{}, localChain)
+
+	// Send the peer's newest block to the local node.
+	// It cannot connect directly because Peer Block 1 is missing.
+	receivedBlock := peerChain.Blocks[len(peerChain.Blocks)-1]
+
+	blockJSON, err := json.Marshal(receivedBlock)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/blocks",
+		bytes.NewReader(blockJSON),
+	)
+
+	// Tell the local node which peer sent the block.
+	request.Header.Set("X-Node-Address", peerServer.URL)
+
+	response := httptest.NewRecorder()
+
+	localNode.Handler().ServeHTTP(response, request)
+
+	if response.Code != http.StatusAccepted {
+		t.Fatalf(
+			"expected status 202, got %d: %s",
+			response.Code,
+			response.Body.String(),
+		)
+	}
+
+	// The local node should now have adopted the peer's chain.
+	if len(localChain.Blocks) != len(peerChain.Blocks) {
+		t.Fatalf(
+			"expected %d blocks, got %d",
+			len(peerChain.Blocks),
+			len(localChain.Blocks),
+		)
+	}
+
+	localHead := localChain.Blocks[len(localChain.Blocks)-1].Hash
+	peerHead := peerChain.Blocks[len(peerChain.Blocks)-1].Hash
+
+	if localHead != peerHead {
+		t.Fatal("expected local node to adopt the peer chain")
+	}
+
+	// The transaction from the orphaned local block should return.
+	if len(localChain.PendingTransactions) != 1 {
+		t.Fatalf(
+			"expected 1 orphaned transaction, got %d",
+			len(localChain.PendingTransactions),
+		)
+	}
+
+	if localChain.PendingTransactions[0].ID != localTransaction.ID {
+		t.Fatal("expected local orphaned transaction to return to pending")
+	}
+}
