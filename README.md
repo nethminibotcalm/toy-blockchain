@@ -13,7 +13,7 @@ The project extends the original single-process blockchain simulator into a mult
 - Previous-hash block linking
 - Proof-of-Work mining
 - Concurrent mining using goroutines
-- Merkle roots
+- Merkle roots and transaction inclusion proofs
 - Difficulty adjustment
 - Full-chain validation
 - Tamper detection
@@ -215,6 +215,26 @@ After block acceptance, every pending pool should return:
 | `GET` | `/chain` | Return the complete blockchain |
 | `GET` | `/blocks?from=<index>` | Return blocks from an index |
 | `GET` | `/nonce?address=<address>` | Return a sender’s next nonce |
+| `GET` | `/merkle-proof?block=<index>&transaction=<id>` | Return a Merkle inclusion proof for one transaction |
+
+## Merkle Inclusion Proofs
+
+Request proof that one transaction is included in a block:
+
+```bash
+curl.exe "http://localhost:8001/merkle-proof?block=1&transaction=<transaction-id>"
+```
+
+The response contains:
+
+* The block and transaction indexes
+* The complete transaction
+* The block's Merkle root
+* The neighboring hashes and their left/right positions
+* A `verified` result
+
+The proof allows the transaction to be checked against the block's Merkle root without downloading every transaction in that block. Changing any signed transaction field, including the amount or nonce, causes verification to fail.
+
 
 ### State-changing endpoints
 
@@ -355,7 +375,7 @@ Tests cover:
 - Transaction ID generation
 - Nonce and replay protection
 - Mining difficulty
-- Merkle roots
+- Merkle roots and inclusion proofs
 - Tamper detection
 - Pending double-spending
 - Transaction de-duplication
@@ -439,7 +459,6 @@ Current limitations include:
 - No authentication for administrative endpoints such as `/mine`
 - No transaction fees or mining rewards
 - No smart contracts
-- No Merkle inclusion-proof endpoint
 - No production-grade private-key protection
 - No Docker Compose launcher
 - No Byzantine-fault-tolerant consensus

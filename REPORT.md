@@ -93,6 +93,7 @@ The state-changing endpoints are:
 | POST | `/transactions` | Receive a signed transaction |
 | POST | `/blocks` | Receive an already-mined block |
 | POST | `/mine` | Mine the running node’s pending transactions |
+| GET | `/merkle-proof?block=<index>&transaction=<id>` | Return a Merkle inclusion proof for one transaction |
 
 The custom `X-Node-Address` header identifies the peer that forwarded a transaction or block. The receiver excludes that peer when forwarding, preventing an immediate return to the sender.
 
@@ -644,7 +645,6 @@ Limitations include:
 - Wallet files are not password-encrypted.
 - There are no transaction fees or mining rewards.
 - There is no smart-contract execution.
-- There is no Merkle inclusion-proof API.
 - Network nodes primarily keep independent in-memory state.
 - Separate persistent data directories and automatic restart restoration are not implemented.
 - The simple full-mesh gossip strategy creates redundant messages.

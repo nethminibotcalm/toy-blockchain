@@ -13,6 +13,7 @@ func (n *Node) Handler() http.Handler {
 	mux.HandleFunc("/blocks", n.handleBlock)
 	mux.HandleFunc("/mine", n.handleMine)
 	mux.HandleFunc("/nonce", n.handleNonce)
+	mux.HandleFunc("/merkle-proof", n.handleMerkleProof)
 	return mux
 }
 func (n *Node) Start() error {
