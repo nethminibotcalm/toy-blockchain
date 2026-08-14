@@ -40,6 +40,9 @@ The project extends the original single-process blockchain simulator into a mult
 - Transaction and block de-duplication
 - Peer forwarding with timeouts
 - Three-node local cluster launcher
+- Peer discovery from a single seed
+- Two-way peer registration
+- Duplicate and self-peer prevention
 
 ### Synchronization and Reorganization
 
@@ -134,6 +137,35 @@ If PowerShell blocks the script:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\start-cluster.ps1
 ```
+## Peer Discovery
+
+A new node needs only one seed address. It requests the seed node's peer list, safely adds unknown addresses and continues discovery through newly learned peers.
+
+The new node also registers its own address with every peer it contacts. This allows existing nodes to learn about the joining node and creates two-way connectivity.
+
+Example:
+
+```powershell
+go run . node `
+    -address localhost:8003 `
+    -peers localhost:8001
+```
+
+If Node A already knows Node B, Node C forms the following peer list automatically:
+
+```text
+Node C: [localhost:8001 localhost:8002]
+```
+
+The live three-node experiment produced:
+
+```text
+Node A: [localhost:8002 localhost:8003]
+Node B: [localhost:8001 localhost:8003]
+Node C: [localhost:8001 localhost:8002]
+```
+
+Peer-list access uses the node's read/write mutex. Gossip and synchronization operate on safe snapshots so network requests do not hold the mutex.
 
 The script starts:
 
@@ -216,6 +248,8 @@ After block acceptance, every pending pool should return:
 | `GET` | `/blocks?from=<index>` | Return blocks from an index |
 | `GET` | `/nonce?address=<address>` | Return a sender’s next nonce |
 | `GET` | `/merkle-proof?block=<index>&transaction=<id>` | Return a Merkle inclusion proof for one transaction |
+| `GET` | `/peers` | Return known peers |
+| `POST` | `/peers` | Register a node as a peer |
 
 ## Merkle Inclusion Proofs
 
@@ -453,7 +487,7 @@ This is an educational blockchain, not a production cryptocurrency.
 
 Current limitations include:
 
-- No peer discovery; peers are configured at startup
+
 - No automatic peer-health management
 - No encrypted peer communication
 - No authentication for administrative endpoints such as `/mine`

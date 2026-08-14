@@ -38,7 +38,9 @@ func (n *Node) forwardBlock(
 		Timeout: 2 * time.Second,
 	}
 
-	for _, peer := range n.Config.Peers {
+	peers := n.PeerSnapshot()
+
+	for _, peer := range peers {
 		if peer == excludedPeer {
 			continue
 		}

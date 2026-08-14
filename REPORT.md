@@ -59,6 +59,7 @@ HTTP router and handlers
 ```
 
 The configuration contains the node’s listening address and initial peer list.
+The initial list acts as a seed list. Nodes request peer lists from their seeds, recursively add new unique peers and register their own address with every contacted peer.
 
 For example:
 
@@ -94,6 +95,7 @@ The state-changing endpoints are:
 | POST | `/blocks` | Receive an already-mined block |
 | POST | `/mine` | Mine the running node’s pending transactions |
 | GET | `/merkle-proof?block=<index>&transaction=<id>` | Return a Merkle inclusion proof for one transaction |
+| POST | `/peers` | Register a node as a peer |
 
 The custom `X-Node-Address` header identifies the peer that forwarded a transaction or block. The receiver excludes that peer when forwarding, preventing an immediate return to the sender.
 
@@ -541,6 +543,31 @@ Tests cover:
 - Reorganization
 - Orphaned-transaction recovery
 - Race-free operation
+### 9.6 Peer-discovery experiment
+
+Three nodes were started with the following initial configuration:
+
+```text
+Node A: seed Node B
+Node B: seed Node A
+Node C: seed Node A only
+```
+
+Node C requested Node A's peer list and produced:
+
+```text
+Peer discovered: localhost:8002
+```
+
+Node C then registered its own address with Node A and the newly discovered Node B. The final `/peers` responses were:
+
+```text
+Node A: [localhost:8002 localhost:8003]
+Node B: [localhost:8001 localhost:8003]
+Node C: [localhost:8001 localhost:8002]
+```
+
+This demonstrated that a new node can join through one seed address and that two-way registration allows every node to learn about the new participant. Duplicate peers and each node's own address are rejected. Peer-list snapshots and updates are protected by `sync.RWMutex`, and the complete suite passed the Go race detector.
 
 ## 10. Challenges and Solutions
 
@@ -638,7 +665,7 @@ The implementation is educational and is not suitable for production use.
 
 Limitations include:
 
-- Peers are configured manually; there is no peer discovery.
+
 - Unreachable peers are not permanently removed.
 - HTTP communication is not encrypted.
 - Administrative endpoints such as `/mine` are unauthenticated.

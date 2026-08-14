@@ -160,14 +160,26 @@ func main() {
 			return
 		}
 		blockchainNode := node.NewNode(config, bc)
+
+		if err := blockchainNode.DiscoverPeers(); err != nil {
+			fmt.Println(
+				"Initial peer discovery failed:",
+				err,
+			)
+		}
+
 		if err := blockchainNode.SyncWithPeers(); err != nil {
 			fmt.Println(
 				"Initial synchronization failed:",
 				err,
 			)
 		}
+
 		fmt.Println("Node listening on", config.Address)
-		fmt.Println("Known peers:", config.Peers)
+		fmt.Println(
+			"Known peers:",
+			blockchainNode.PeerSnapshot(),
+		)
 		if err := blockchainNode.Start(); err != nil {
 			fmt.Println("Node server failed:", err)
 		}

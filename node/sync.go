@@ -180,7 +180,9 @@ func (n *Node) rebuildSeenState() {
 func (n *Node) SyncWithPeers() error {
 	var lastError error
 
-	for _, peer := range n.Config.Peers {
+	peers := n.PeerSnapshot()
+
+	for _, peer := range peers {
 		err := n.SyncFromPeer(peer)
 
 		if err == nil {
