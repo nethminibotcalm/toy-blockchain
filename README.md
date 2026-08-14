@@ -43,6 +43,10 @@ The project extends the original single-process blockchain simulator into a mult
 - Peer discovery from a single seed
 - Two-way peer registration
 - Duplicate and self-peer prevention
+- Docker Compose three-node cluster
+- Separate listen and advertised node addresses
+- Container health checks
+
 
 ### Synchronization and Reorganization
 
@@ -137,6 +141,49 @@ If PowerShell blocks the script:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\start-cluster.ps1
 ```
+## Running the Cluster with Docker Compose
+
+Requirements:
+
+* Docker Desktop
+* Docker Compose v2
+
+Build and start all three nodes:
+
+```bash
+docker compose up --build -d
+```
+
+Check container health:
+
+```bash
+docker compose ps
+```
+
+View network logs:
+
+```bash
+docker compose logs
+```
+
+The services are available from the host at:
+
+| Node   | Host API                | Docker advertised address |
+| ------ | ----------------------- | ------------------------- |
+| Node A | `http://localhost:8001` | `node-a:8001`             |
+| Node B | `http://localhost:8002` | `node-b:8002`             |
+| Node C | `http://localhost:8003` | `node-c:8003`             |
+
+Node C is configured with only Node A as its seed. It discovers Node B and registers itself with both existing nodes.
+
+Stop and remove the cluster containers and temporary network:
+
+```bash
+docker compose down
+```
+
+The Docker image is built using a multi-stage `Dockerfile` and runs the final application as a non-root user. Private wallet files, generated chain data and Git history are excluded through `.dockerignore`.
+
 ## Peer Discovery
 
 A new node needs only one seed address. It requests the seed node's peer list, safely adds unknown addresses and continues discovery through newly learned peers.
@@ -494,7 +541,6 @@ Current limitations include:
 - No transaction fees or mining rewards
 - No smart contracts
 - No production-grade private-key protection
-- No Docker Compose launcher
 - No Byzantine-fault-tolerant consensus
 - Network nodes do not yet use separate persistent data directories
 

@@ -42,6 +42,8 @@ Assessment 2 introduced the following major changes:
 - Valid transactions from orphaned blocks return to the pending pool.
 - Shared node state is protected using `sync.RWMutex`.
 - A PowerShell launcher starts a three-node local cluster.
+- A multi-stage Docker image and Docker Compose launcher start the three-node network with one command.
+- Separate listen and advertised addresses support communication through Docker service names.
 
 ## 3. System Design
 
@@ -568,6 +570,33 @@ Node C: [localhost:8001 localhost:8002]
 ```
 
 This demonstrated that a new node can join through one seed address and that two-way registration allows every node to learn about the new participant. Duplicate peers and each node's own address are rejected. Peer-list snapshots and updates are protected by `sync.RWMutex`, and the complete suite passed the Go race detector.
+### 9.7 Docker Compose cluster experiment
+
+A multi-stage Dockerfile was used to compile the Go application and copy only the final executable into a small Alpine runtime image. The application runs as a non-root user. A `.dockerignore` file excludes private wallets, generated chains and Git history from the build context.
+
+The complete cluster was started with:
+
+```bash
+docker compose up --build -d
+```
+
+Docker Compose started three healthy containers and exposed their APIs through host ports 8001, 8002 and 8003. Each node listened on `0.0.0.0` inside its container while advertising its Docker DNS address, such as `node-a:8001`, to peers.
+
+Node C started with only Node A as its seed and discovered Node B:
+
+```text
+Node A: [node-b:8002 node-c:8003]
+Node B: [node-a:8001 node-c:8003]
+Node C: [node-a:8001 node-b:8002]
+```
+
+A signed Alice-to-Bob transaction was submitted to Node A. Before mining, all three pending pools contained one transaction. Node A then mined the transaction, and block gossip caused all nodes to reach height 1 with the same head hash:
+
+```text
+0000de05a376990354bc99c03fc1c7299e5b0c82...
+```
+
+The equality check across all three head hashes returned `true`. This demonstrated that the one-command container cluster supports peer discovery, transaction gossip, mining, block gossip and network convergence.
 
 ## 10. Challenges and Solutions
 

@@ -140,10 +140,10 @@ func (n *Node) DiscoverPeers() error {
 
 		successfulRequest = true
 
-		if n.Config.Address != "" {
+		if n.Config.AdvertiseAddress != "" {
 			if err := registerWithPeer(
 				peer,
-				n.Config.Address,
+				n.Config.AdvertiseAddress,
 			); err != nil {
 				fmt.Println(
 					"Failed to register with peer",

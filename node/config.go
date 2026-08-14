@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Address string
-	Peers   []string
+	Address          string
+	AdvertiseAddress string
+	Peers            []string
 }
 
 func ParseConfig(args []string) (Config, error) {
@@ -17,6 +18,11 @@ func ParseConfig(args []string) (Config, error) {
 		"localhost:8001",
 		"HTTP address used by this node",
 	)
+	advertiseAddress := flags.String(
+		"advertise",
+		"",
+		"address advertised to other nodes",
+	)
 
 	peersText := flags.String(
 		"peers",
@@ -25,6 +31,11 @@ func ParseConfig(args []string) (Config, error) {
 	)
 	if err := flags.Parse(args); err != nil {
 		return Config{}, err
+	}
+	advertised := strings.TrimSpace(*advertiseAddress)
+
+	if advertised == "" {
+		advertised = *address
 	}
 	peers := []string{}
 
@@ -36,7 +47,8 @@ func ParseConfig(args []string) (Config, error) {
 		}
 	}
 	return Config{
-		Address: *address,
-		Peers:   peers,
+		Address:          *address,
+		AdvertiseAddress: advertised,
+		Peers:            peers,
 	}, nil
 }

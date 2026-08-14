@@ -55,7 +55,7 @@ func (n *Node) forwardTransaction(
 		}
 		request.Header.Set(
 			"X-Node-Address",
-			n.Config.Address,
+			n.Config.AdvertiseAddress,
 		)
 
 		request.Header.Set(

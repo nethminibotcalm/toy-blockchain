@@ -58,7 +58,7 @@ func (n *Node) forwardBlock(
 
 		request.Header.Set(
 			"X-Node-Address",
-			n.Config.Address,
+			n.Config.AdvertiseAddress,
 		)
 
 		request.Header.Set(

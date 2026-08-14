@@ -44,7 +44,7 @@ func (n *Node) AddPeer(peer string) bool {
 	defer n.mu.Unlock()
 
 	nodeAddress := strings.TrimRight(
-		n.Config.Address,
+		n.Config.AdvertiseAddress,
 		"/",
 	)
 

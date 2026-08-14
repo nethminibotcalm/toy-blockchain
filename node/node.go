@@ -18,6 +18,9 @@ func NewNode(
 	config Config,
 	chain *blockchain.Blockchain,
 ) *Node {
+	if config.AdvertiseAddress == "" {
+		config.AdvertiseAddress = config.Address
+	}
 	seenTransactions := make(map[string]bool)
 	seenBlocks := make(map[string]bool)
 	// Remember transactions already stored in mined blocks.

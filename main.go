@@ -245,7 +245,11 @@ func main() {
 		fmt.Println("  print")
 		fmt.Println("  validate")
 		fmt.Println("  balance")
-		fmt.Println("  node -address <address> -peers <peer1,peer2>")
+		fmt.Println(
+			"  node -address <listen-address> " +
+				"-advertise <peer-address> " +
+				"-peers <peer1,peer2>",
+		)
 		fmt.Println("  submit <node-address> <sender> <receiver> <amount>")
 	}
 }
